@@ -226,7 +226,7 @@ type expr +=
         return: Type.t option;
         body: Stmt.t list
     }
-    | EDollar_arg of {loc: loc; depth: int; index: int}
+    | EAnon_arg of {loc: loc; depth: int; index: int}
     
     | EParen of loc * expr list
     | EBlock of Stmt.block

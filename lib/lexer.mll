@@ -2,6 +2,7 @@
     open Lexing
     open Parser
     open Base
+    module Array = Caml.Array (* ocamllex bug? *)
     
     exception SyntaxError of string
 
@@ -25,14 +26,12 @@ let hex = ['a'-'f' 'A'-'F' '0'-'9']
 let int = '-'? digit+
 let dec = '-'? digit+ '.' digit+
 
-let ident = lower alnum*
+let ident = (lower | '_' alnum) alnum*
 let label = (lower | '_') alnum*
 let type = upper alnum*
 
 let horiz = [' ' '\t']
-
 let newline = '\r' | '\n' | "\r\n"
-
 let blank = horiz+ (newline+ horiz*)* | newline+ (horiz+ newline*)*
 let line_sep = horiz* (newline+ horiz*)+
 let comma_sep = blank? ',' blank?
@@ -40,50 +39,51 @@ let comma = horiz* ',' horiz*
 
 (* worry about multiline strings and interpolation later *)
 rule read_token = parse
-| horiz {read_token lexbuf}
-| newline {new_line lexbuf; read_token lexbuf}
-| ";[" {read_multiline_comment 0 lexbuf}
-| ';' {read_line_comment lexbuf}
-| comma_sep {C_SEP}
-| comma {C_HS}
-| line_sep {L_SEP}
+| horiz { read_token lexbuf }
+| newline { new_line lexbuf; read_token lexbuf }
+| ";[" { read_multiline_comment 0 lexbuf }
+| ';' { read_line_comment lexbuf }
+| comma_sep { C_SEP }
+| comma { C_HS }
+| line_sep { L_SEP }
 
 | "true" { BOOL true }
 | "false" { BOOL false }
 | "this" { THIS }
+| '_' { WILDCARD }
 
-| "module" { K_MODULE }
-| "macro" { K_MACRO }
-| "my" { K_MY }
-| "on" { K_ON }
-| "return" { K_RETURN }
-| "init" { K_INIT }
-| "deinit" { K_DEINIT }
-| "operator" { K_OPERATOR }
-| "class" { K_CLASS }
-| "alias" { K_ALIAS }
-| "type" { K_TYPE }
-| "kind" { K_KIND }
-| "category" { K_CATEGORY }
-| "protocol" { K_PROTOCOL }
-| "is" { K_IS }
-| "of" { K_OF }
-| "use" { K_USE }
-| "has" { K_HAS }
-| "if" { K_IF }
-| "orif" { K_ORIF }
-| "else" { K_ELSE }
-| "while" { K_WHILE }
-| "for" { K_FOR }
-| "do" { K_DO }
-| "case" { K_CASE }
-| "match" { K_MATCH }
-| "at" { K_AT }
-| "break" { K_BREAK }
-| "next" { K_NEXT }
-| "throw" { K_THROW }
-| "try" { K_TRY }
-| "catch" { K_CATCH }
+| "module" { MODULE }
+| "macro" { MACRO }
+| "my" { MY }
+| "on" { ON }
+| "return" { RETURN }
+| "init" { INIT }
+| "deinit" { DEINIT }
+| "operator" { OPERATOR }
+| "class" { CLASS }
+| "alias" { ALIAS }
+| "type" { TYPE }
+| "kind" { KIND }
+| "category" { CATEGORY }
+| "protocol" { PROTOCOL }
+| "is" { IS }
+| "of" { OF }
+| "use" { USE }
+| "has" { HAS }
+| "if" { IF }
+| "orif" { ORIF }
+| "else" { ELSE }
+| "while" { WHILE }
+| "for" { FOR }
+| "do" { DO }
+| "case" { CASE }
+| "match" { MATCH }
+| "at" { AT }
+| "break" { BREAK }
+| "next" { NEXT }
+| "throw" { THROW }
+| "try" { TRY }
+| "catch" { CATCH }
 
 | '#' (ident as id) { TAG id }
 | ':' (ident as id) { PUNNED id }
@@ -96,15 +96,16 @@ rule read_token = parse
 | dec as d { DEC (Float.of_string d) }
 | '"' { read_string (Buffer.create 10) lexbuf }
 | "#\"" { read_char lexbuf }
+| '$' ('.'* as dots) (digit+ as nth) { ANON_ARG(String.length dots, Int.of_string nth) }
 
 | eof { EOF }
-| _ {raise (SyntaxError "wtf")}
+| _ { raise (SyntaxError "wtf") }
 
 
 and read_line_comment = parse
-| newline {next_line lexbuf; read_token lexbuf}
-| eof {EOF}
-| _ {read_line_comment lexbuf}
+| newline { next_line lexbuf; read_token lexbuf }
+| eof { EOF }
+| _ { read_line_comment lexbuf }
 
 
 and read_multiline_comment depth = parse
