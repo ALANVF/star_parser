@@ -608,11 +608,23 @@ let rec pp_expr fmt e =
 
     let str = fprintf fmt "%s %s" in
 
+    let module Anon_arg = struct
+        type t = {loc: loc; depth: int; index:int} [@@deriving show]
+    end in
+
     match e with
     | EName id -> str "EName" @@ show_ident id
-    | EInt(l, i) -> str "EInt" @@ [%show: loc * int] (l, i)
-    | EDec(l, d) -> str "EDec" @@ [%show: loc * float] (l, d)
-    | EChar(l, c) -> str "EChar" @@ [%show: loc * char] (l, c)
+    | EInt(l, v) -> str "EInt" @@ [%show: loc * int] (l, v)
+    | EDec(l, v) -> str "EDec" @@ [%show: loc * float] (l, v)
+    | EChar(l, v) -> str "EChar" @@ [%show: loc * char] (l, v)
+    | EStr(l, v) -> str "EStr" @@ [%show: loc * string] (l, v)
+    | EBool(l, v) -> str "EBool" @@ [%show: loc * bool] (l, v)
+    | EArray(l, v) -> str "EArray" @@ [%show: loc * expr list] (l, v)
+    | EHash(l, v) -> str "EHash" @@ [%show: loc * (expr * expr) list] (l, v)
+    | ETuple(l, v) -> str "ETuple" @@ [%show: loc * expr list] (l, v)
+    | EThis l -> str "EThis" @@ show_loc l
+    | EWildcard l -> str "EWildcard" @@ show_loc l
+    | EAnon_arg {loc; depth; index} -> let open Anon_arg in str "EAnon_arg" @@ [%show: t] {loc; depth; index} (* hack *)
     | _ -> ()
 
 and pp_multi_label fmt l =

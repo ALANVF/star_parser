@@ -212,6 +212,8 @@
 
 %right STARSTAR // a ** b
 
+//%nonassoc tag
+
 %nonassoc
     PLUSPLUS   // ++a, a++
     MINUSMINUS // --a, a--
@@ -247,7 +249,12 @@ program:
 literal:
 | int
 | dec
-| char { $1 }
+| char
+| str
+| bool
+| this
+| anon_arg
+{ $1 }
 
 int: INT {
     EInt($startpos, $1)
@@ -259,4 +266,27 @@ dec: DEC {
 
 char: CHAR {
     EChar($startpos, $1)
+}
+
+str: STR {
+    EStr($startpos, $1)
+}
+
+bool: BOOL {
+    EBool($startpos, $1)
+}
+
+this: THIS {
+    EThis $startpos
+}
+
+anon_arg: ANON_ARG {
+    (* weird menhir bug here? *)
+    let loc = $startpos in
+    let (depth, index) = $1 in
+    EAnon_arg {
+        loc;
+        depth;
+        index
+    }
 }
