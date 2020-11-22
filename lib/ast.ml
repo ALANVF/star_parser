@@ -271,14 +271,15 @@ module Decls = struct
 
     module Member = struct
         module Attr = struct
-            type k =
-                | Is_static
-                | Is_hidden
-                | Is_readonly
-                | Is_getter
-                | Is_setter
-                | Is_noinherit
-
+            type k = [
+                | `Is_static
+                | `Is_hidden
+                | `Is_readonly
+                | `Is_getter
+                | `Is_setter
+                | `Is_noinherit
+            ]
+            
             type t = loc * loc * k
         end
 
@@ -299,43 +300,48 @@ module Decls = struct
     end
 
     module Module_attr = struct
-        type k =
-            | Is_hidden
-            | Is_main
-            | Is_native of loc * string
+        type k = [
+            | `Is_hidden
+            | `Is_main
+            | `Is_native of loc * string
+        ]
 
         type t = loc * loc * k
     end
 
     module Class_attr = struct
-        type k =
-            | Is_hidden
-            | Is_friend of Friend.t
-            | Is_native of (ident * expr) list delims_loc
-        
+        type k = [
+            | `Is_hidden
+            | `Is_friend of Friend.t
+            | `Is_native of (ident * expr) list delims_loc
+        ]
+
         type t = loc * loc * k
     end
 
     module Protocol_attr = struct
-        type k =
-            | Is_hidden
-            | Is_friend of Friend.t
-        
+        type k = [
+            | `Is_hidden
+            | `Is_friend of Friend.t
+        ]
+
         type t = loc * loc * k
     end
 
     module Kind_attr = struct
-        type k =
-            | Is_hidden
-            | Is_friend of Friend.t
-            | Is_flags
-        
+        type k = [
+            | `Is_hidden
+            | `Is_friend of Friend.t
+            | `Is_flags
+        ]
+
         type t = loc * loc * k
     end
 
     module Alias_attr = struct
-        type k =
-            | Is_hidden
+        type k = [
+            | `Is_hidden
+        ]
 
         type t = loc * loc * k
     end
@@ -369,15 +375,16 @@ module Decls = struct
 
     module Method = struct
         module Attr = struct
-            type k =
-                | Is_static
-                | Is_hidden
-                | Is_main
-                | Is_getter
-                | Is_setter
-                | Is_noinherit
-                | Is_unordered
-                | Is_native of (loc * string) option
+            type k = [
+                | `Is_static
+                | `Is_hidden
+                | `Is_main
+                | `Is_getter
+                | `Is_setter
+                | `Is_noinherit
+                | `Is_unordered
+                | `Is_native of (loc * string) option
+            ]
 
             type t = loc * loc * k
         end
@@ -400,11 +407,12 @@ module Decls = struct
 
     module Init = struct
         module Attr = struct
-            type k =
-                | Is_hidden
-                | Is_noinherit
-                | Is_unordered
-                | Is_native of (loc * string) option
+            type k = [
+                | `Is_hidden
+                | `Is_noinherit
+                | `Is_unordered
+                | `Is_native of (loc * string) option
+            ]
 
             type t = loc * loc * k
         end
@@ -425,10 +433,11 @@ module Decls = struct
 
     module Operator = struct
         module Attr = struct
-            type k =
-                | Is_hidden
-                | Is_noinherit
-                | Is_native of (loc * string) option
+            type k = [
+                | `Is_hidden
+                | `Is_noinherit
+                | `Is_native of (loc * string) option
+            ]
 
             type t = loc * loc * k
         end
@@ -446,8 +455,9 @@ module Decls = struct
 
     module Base_method = struct
         module Attr = struct
-            type k =
-                | Is_static
+            type k = [
+                | `Is_static
+            ]
             
             type t = loc * loc * k
         end
