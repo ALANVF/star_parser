@@ -18,6 +18,11 @@ module Type = struct
     and t = loc * t'
 end
 
+type types_spec = [
+    | `One of Type.t
+    | `Many of Type.t list delims_loc
+]
+
 module Prefix = struct
     type t =
         | Incr
@@ -291,13 +296,7 @@ module Decls = struct
             value: (loc * expr) option
         }
     end
-
-
-    module Friend = struct
-        type t =
-            | One of Type.t
-            | Many of Type.t list delims_loc
-    end
+    
 
     module Module_attr = struct
         type k = [
@@ -312,7 +311,7 @@ module Decls = struct
     module Class_attr = struct
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
             | `Is_native of (ident * expr) list delims_loc
         ]
 
@@ -322,7 +321,7 @@ module Decls = struct
     module Protocol_attr = struct
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
         ]
 
         type t = loc * loc * k
@@ -331,7 +330,7 @@ module Decls = struct
     module Kind_attr = struct
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
             | `Is_flags
         ]
 
@@ -559,5 +558,13 @@ module Decls = struct
         name: ident;
         kind: Alias.k;
         attrs: Alias_attr.t list
+    }
+
+
+    type use_decl = {
+        generics: generic_param list;
+        loc: loc;
+        spec: types_spec;
+        from: (loc * Type.t) option
     }
 end

@@ -18,6 +18,11 @@ module Type: sig
     and t = loc * t'
 end
 
+type types_spec = [
+    | `One of Type.t
+    | `Many of Type.t list delims_loc
+]
+
 module Prefix: sig
     type t =
         | Incr
@@ -293,12 +298,6 @@ module Decls: sig
     end
 
 
-    module Friend: sig
-        type t =
-            | One of Type.t
-            | Many of Type.t list delims_loc
-    end
-
     module Module_attr: sig
         type k = [
             | `Is_hidden
@@ -312,7 +311,7 @@ module Decls: sig
     module Class_attr: sig
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
             | `Is_native of (ident * expr) list delims_loc
         ]
         
@@ -322,7 +321,7 @@ module Decls: sig
     module Protocol_attr: sig
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
         ]
         
         type t = loc * loc * k
@@ -331,7 +330,7 @@ module Decls: sig
     module Kind_attr: sig
         type k = [
             | `Is_hidden
-            | `Is_friend of Friend.t
+            | `Is_friend of types_spec
             | `Is_flags
         ]
         
@@ -559,5 +558,13 @@ module Decls: sig
         name: ident;
         kind: Alias.k;
         attrs: Alias_attr.t list
+    }
+
+
+    type use_decl = {
+        generics: generic_param list;
+        loc: loc;
+        spec: types_spec;
+        from: (loc * Type.t) option
     }
 end
