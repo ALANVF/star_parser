@@ -1,0 +1,18 @@
+{
+	"ocaml.sandbox": {
+		"kind": "opam",
+		"switch": "4.11.1"
+	},
+	"files.associations": {
+		"*.ml": "ocaml",
+		"*.mli": "ocaml"
+	},
+	"[ocaml]": {
+		"editor.tabSize": 4,
+		"editor.useTabStops": false
+	},
+	"[ocaml.menhir]": {
+		"editor.tabSize": 4,
+		"editor.useTabStops": false
+	}
+}

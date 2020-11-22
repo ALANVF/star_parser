@@ -1,0 +1,10 @@
+(library
+ (name star_parser)
+ ;(libraries base menhir)
+ (libraries base)
+ )
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
