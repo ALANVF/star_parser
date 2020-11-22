@@ -60,6 +60,14 @@
 %token UNCOUNTED
 %token STRONG
 
+%token L_IN
+%token L_FROM
+%token L_TO
+%token L_UPTO
+%token L_DOWNTO
+%token L_BY
+%token L_WHILE
+
 %token <string> IDENT
 %token <string> TYPE_NAME
 %token <string> LABEL

@@ -106,6 +106,14 @@ rule read_token = parse
 | "uncounted" { UNCOUNTED }
 | "strong" { STRONG }
 
+| "in:" { L_IN }
+| "from:" { L_FROM }
+| "to:" { L_TO }
+| "upto:" { L_UPTO }
+| "downto:" { L_DOWNTO }
+| "by:" { L_BY }
+| "while:" { L_WHILE }
+
 | '#' (ident as id) { TAG id }
 | ':' (ident as id) { PUNNED id }
 | (label as lb) ':' { LABEL lb }
