@@ -573,3 +573,18 @@ module Decls: sig
         kind: Use.k
     }
 end
+
+module Program: sig
+    open Decls
+
+    type top_level = [
+        | `Module of module_decl
+        | `Class of class_decl
+        | `Protocol of protocol_decl
+        | `Kind of kind_decl
+        | `Alias of alias_decl
+        | `Use of use_decl
+    ]
+
+    type t = top_level list
+end
