@@ -68,6 +68,61 @@
 %token L_BY
 %token L_WHILE
 
+%token TILDE
+%token DOT
+%token EQ
+%token EQGT
+%token PLUS
+%token PLUSEQ
+%token PLUSPLUS
+%token MINUS
+%token MINUSEQ
+%token MINUSMINUS
+%token STAR
+%token STAREQ
+%token STARSTAR
+%token STARSTAREQ
+%token DIV
+%token DIVEQ
+%token DIVDIV
+%token DIVDIVEQ
+%token MOD
+%token MODEQ
+%token MODMOD
+%token MODMODEQ
+%token AND
+%token ANDEQ
+%token ANDAND
+%token ANDANDEQ
+%token BAR
+%token BAREQ
+%token BARBAR
+%token BARBAREQ
+%token CARET
+%token CARETEQ
+%token CARETCARET
+%token CARETCARETEQ
+%token BANG
+%token BANGEQ
+%token BANGBANG
+%token BANGBANGEQ
+%token QUESTION
+%token QUESTIONEQ
+%token GT
+%token GTEQ
+%token GTGT
+%token GTGTEQ
+%token LT
+%token LTEQ
+%token LTLT
+%token LTLTEQ
+%token <int> CASCADE
+
+
+
+
+
+
 %token <string> IDENT
 %token <string> TYPE_NAME
 %token <string> LABEL

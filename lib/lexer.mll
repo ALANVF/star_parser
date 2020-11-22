@@ -127,6 +127,56 @@ rule read_token = parse
 | "#\"" { read_char lexbuf }
 | '$' ('.'* as dots) (digit+ as nth) { ANON_ARG(String.length dots, Int.of_string nth) }
 
+| '~' { TILDE }
+| '.' { DOT }
+| '=' { EQ }
+| "=>" { EQGT }
+| '+' { PLUS }
+| "+=" { PLUSEQ }
+| "++" { PLUSPLUS }
+| '-' { MINUS }
+| "-=" { MINUSEQ }
+| "--" { MINUSMINUS }
+| '*' { STAR }
+| "*=" { STAREQ }
+| "**" { STARSTAR }
+| "**=" { STARSTAREQ }
+| '/' { DIV }
+| "/=" { DIVEQ }
+| "//" { DIVDIV }
+| "//=" { DIVDIVEQ }
+| '%' { MOD }
+| "%=" { MODEQ }
+| "%%" { MODMOD }
+| "%%=" { MODMODEQ }
+| '&' { AND }
+| "&=" { ANDEQ }
+| "&&" { ANDAND }
+| "&&=" { ANDANDEQ }
+| '|' { BAR }
+| "|=" { BAREQ }
+| "||" { BARBAR }
+| "||=" { BARBAREQ }
+| '^' { CARET }
+| "^=" { CARETEQ }
+| "^^" { CARETCARET }
+| "^^=" { CARETCARETEQ }
+| '!' { BANG }
+| "!=" { BANGEQ }
+| "!!" { BANGBANG }
+| "!!=" { BANGBANGEQ }
+| '?' { QUESTION }
+| "?=" { QUESTIONEQ }
+| '>' { GT }
+| ">=" { GTEQ }
+| ">>" { GTGT }
+| ">>=" { GTGTEQ }
+| '<' { LT }
+| "<=" { LTEQ }
+| "<<" { LTLT }
+| "<<=" { LTLTEQ }
+| ('-'+ as dashes) '>' { CASCADE (String.length dashes) }
+
 | eof { EOF }
 | _ { raise (SyntaxError "wtf") }
 
