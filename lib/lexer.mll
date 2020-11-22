@@ -114,6 +114,8 @@ rule read_token = parse
 | "by:" { L_BY }
 | "while:" { L_WHILE }
 
+| "`script`" { Y_SCRIPT }
+
 | '#' (ident as id) { TAG id }
 | ':' (ident as id) { PUNNED id }
 | (label as lb) ':' { LABEL lb }
@@ -176,6 +178,16 @@ rule read_token = parse
 | "<<" { LTLT }
 | "<<=" { LTLTEQ }
 | ('-'+ as dashes) '>' { CASCADE (String.length dashes) }
+
+| '(' { LPAREN }
+| '[' { LBRACKET }
+| '{' { LBRACE }
+| "#(" { HASHLPAREN }
+| "#[" { HASHLBRACKET }
+| "#{" { HASHLBRACE }
+| ')' { RPAREN }
+| ']' { RBRACKET }
+| '}' { RBRACE }
 
 | eof { EOF }
 | _ { raise (SyntaxError "wtf") }

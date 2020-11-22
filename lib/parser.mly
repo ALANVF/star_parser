@@ -68,6 +68,8 @@
 %token L_BY
 %token L_WHILE
 
+%token Y_SCRIPT
+
 %token TILDE
 %token DOT
 %token EQ
@@ -118,7 +120,15 @@
 %token LTLTEQ
 %token <int> CASCADE
 
-
+%token LPAREN
+%token LBRACKET
+%token LBRACE
+%token HASHLPAREN
+%token HASHLBRACKET
+%token HASHLBRACE
+%token RPAREN
+%token RBRACKET
+%token RBRACE
 
 
 

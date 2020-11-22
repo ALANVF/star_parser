@@ -577,7 +577,7 @@ end
 module Program: sig
     open Decls
 
-    type top_level = [
+    type modular = [
         | `Module of module_decl
         | `Class of class_decl
         | `Protocol of protocol_decl
@@ -586,5 +586,13 @@ module Program: sig
         | `Use of use_decl
     ]
 
-    type t = top_level list
+    type script = [
+        modular
+        | `Method of Method.t
+        | `Statement of Stmt.t
+    ]
+
+    type t =
+        | Modular of modular list
+        | Script of script list
 end
