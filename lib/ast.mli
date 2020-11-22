@@ -371,6 +371,12 @@ module Decls: sig
             | Strong of Type.t
     end
 
+    module Use: sig
+        type k =
+            | Import of {spec: types_spec; from: (loc * Type.t) option}
+            | Pragma of loc * string
+    end
+
 
     module Method: sig
         module Attr: sig
@@ -564,7 +570,6 @@ module Decls: sig
     type use_decl = {
         generics: generic_param list;
         loc: loc;
-        spec: types_spec;
-        from: (loc * Type.t) option
+        kind: Use.k
     }
 end

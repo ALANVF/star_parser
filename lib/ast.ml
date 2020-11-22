@@ -371,6 +371,12 @@ module Decls = struct
             | Strong of Type.t
     end
 
+    module Use = struct
+        type k =
+            | Import of {spec: types_spec; from: (loc * Type.t) option}
+            | Pragma of loc * string
+    end
+
 
     module Method = struct
         module Attr = struct
@@ -564,7 +570,6 @@ module Decls = struct
     type use_decl = {
         generics: generic_param list;
         loc: loc;
-        spec: types_spec;
-        from: (loc * Type.t) option
+        kind: Use.k
     }
 end
