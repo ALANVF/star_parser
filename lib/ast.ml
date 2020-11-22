@@ -1,27 +1,29 @@
 open Base
 
-type loc = Lexing.position
+type loc = [%import: Lexing.position] [@@deriving show]
 
-type 't delims_loc = loc * 't * loc
+type 't delims_loc = loc * 't * loc [@@deriving show]
 
-type ident = loc * string
+type ident = loc * string [@@deriving show]
 
 module Type = struct
     type segment =
         | Wildcard 
         | Name of string
+    [@@deriving show]
 
     type param = {loc: loc; t: t'}
+    [@@deriving show]
 
-    and t' = (segment * param list) list
+    and t' = (segment * param list) list [@@deriving show]
 
-    and t = loc * t'
+    and t = loc * t' [@@deriving show]
 end
 
 type types_spec = [
     | `One of Type.t
     | `Many of Type.t list delims_loc
-]
+] [@@deriving show]
 
 module Prefix = struct
     type t =
@@ -30,6 +32,7 @@ module Prefix = struct
         | Neg
         | Not
         | Compl
+    [@@deriving show]
 end
 
 module Postfix = struct
@@ -37,6 +40,7 @@ module Postfix = struct
         | Incr
         | Decr
         | Truthy
+    [@@deriving show]
 end
 
 module Infix = struct
@@ -54,7 +58,7 @@ module Infix = struct
         | `BitXor
         | `Shl
         | `Shr
-    ]
+    ] [@@deriving show]
 
     type t = [
         assignable
@@ -69,7 +73,7 @@ module Infix = struct
         | `Xor
         | `Nor
         | `Assign of assignable option
-    ]
+    ] [@@deriving show]
 end
 
 type expr = ..
@@ -596,3 +600,33 @@ module Program = struct
         | Modular of modular list
         | Script of script list
 end
+
+
+let rec pp_expr fmt e =
+    (*let open Stmt.Match_expr in*)
+    let open Caml.Format in
+
+    let str = fprintf fmt "%s %s" in
+
+    match e with
+    | EName id -> str "EName" @@ show_ident id
+    | EInt(l, i) -> str "EInt" @@ [%show: loc * int] (l, i)
+    | EDec(l, d) -> str "EDec" @@ [%show: loc * float] (l, d)
+    | EChar(l, c) -> str "EChar" @@ [%show: loc * char] (l, c)
+    | _ -> ()
+
+and pp_multi_label fmt l =
+    let open Caml.Format in
+    match l with
+    | LNamed(i, e) ->
+        pp_print_text fmt "LNamed (";
+        pp_ident fmt i;
+        pp_print_text fmt ", ";
+        pp_expr fmt e;
+        pp_print_string fmt ")"
+    | LPunned i ->
+        pp_print_text fmt "LPunned ";
+        pp_ident fmt i
+    | LAnon e ->
+        pp_print_text fmt "LAnon ";
+        pp_expr fmt e

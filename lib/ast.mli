@@ -1,27 +1,28 @@
 open Base
 
-type loc = Lexing.position
+type loc = Lexing.position [@@deriving show]
 
-type 't delims_loc = loc * 't * loc
+type 't delims_loc = loc * 't * loc [@@deriving show]
 
-type ident = loc * string
+type ident = loc * string [@@deriving show]
 
 module Type: sig
     type segment =
         | Wildcard 
         | Name of string
+    [@@deriving show]
 
-    type param = {loc: loc; t: t'}
+    type param = {loc: loc; t: t'} [@@deriving show]
 
-    and t' = (segment * param list) list
+    and t' = (segment * param list) list [@@deriving show]
 
-    and t = loc * t'
+    and t = loc * t' [@@deriving show]
 end
 
 type types_spec = [
     | `One of Type.t
     | `Many of Type.t list delims_loc
-]
+] [@@deriving show]
 
 module Prefix: sig
     type t =
@@ -30,6 +31,7 @@ module Prefix: sig
         | Neg
         | Not
         | Compl
+    [@@deriving show]
 end
 
 module Postfix: sig
@@ -37,6 +39,7 @@ module Postfix: sig
         | Incr
         | Decr
         | Truthy
+    [@@deriving show]
 end
 
 module Infix: sig
@@ -54,7 +57,7 @@ module Infix: sig
         | `BitXor
         | `Shl
         | `Shr
-    ]
+    ] [@@deriving show]
 
     type t = [
         assignable
@@ -69,7 +72,7 @@ module Infix: sig
         | `Xor
         | `Nor
         | `Assign of assignable option
-    ]
+    ] [@@deriving show]
 end
 
 type expr = ..
@@ -596,3 +599,8 @@ module Program: sig
         | Modular of modular list
         | Script of script list
 end
+
+
+val pp_expr: Formatter.t -> expr -> unit
+
+val pp_multi_label: Formatter.t -> multi_label -> unit

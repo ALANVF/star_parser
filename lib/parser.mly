@@ -1,5 +1,5 @@
 %{
-    (*open Ast*)
+    open Ast
 %}
 
 %token C_SEP
@@ -130,9 +130,6 @@
 %token RBRACKET
 %token RBRACE
 
-
-
-
 %token <string> IDENT
 %token <string> TYPE_NAME
 %token <string> LABEL
@@ -151,11 +148,115 @@
 
 %token EOF
 
-%type <int list> program
+
+%nonassoc
+    C_SEP // a <newline>? , <newline> b
+    L_SEP // a <newline> b
+
+%left C_HS // a , b
+
+%right EQGT // a => b
+
+%right
+    EQ           // a = b
+    PLUSEQ       // a += b
+    MINUSEQ      // a -= b
+    STAREQ       // a *= b
+    STARSTAREQ   // a **= b
+    DIVEQ        // a /= b
+    DIVDIVEQ     // a //= b
+    MODEQ        // a %= b
+    MODMODEQ     // a %%= b
+    ANDEQ        // a &= b
+    ANDANDEQ     // a &&= b
+    BAREQ        // a |= b
+    BARBAREQ     // a ||= b
+    CARETEQ      // a ^= b
+    CARETCARETEQ // a ^^= b
+    BANGBANGEQ   // a !!= b
+    GTGTEQ       // a >>= b
+    LTLTEQ       // a >>= b
+
+%left
+    ANDAND     // a && b
+    BARBAR     // a || b
+    CARETCARET // a ^^ b
+    BANGBANG   // a !! b
+
+%left
+    QUESTIONEQ // a ?= b
+    BANGEQ     // a != b
+    GT         // a > b
+    GTEQ       // a >= b
+    LT         // a < b
+    LTEQ       // a <= b
+
+%left
+    AND   // a & b
+    OR    // a | b
+    CARET // a ^ b
+    GTGT  // a >> b
+    LTLT  // a << b
+
+%left MODMOD // a %% b
+
+%left
+    PLUS  // a + b
+    MINUS // a - b
+
+%left
+    STAR   // a * b
+    DIV    // a / b
+    DIVDIV // a // b
+    MOD    // a % b
+
+%right STARSTAR // a ** b
+
+%nonassoc
+    PLUSPLUS   // ++a, a++
+    MINUSMINUS // --a, a--
+
+%right
+    TILDE       // ~a
+    unary_minus // -a
+
+%left BANG // !a
+
+%right QUESTION // a?
+
+%left DOT // a.b
+
+// maybe change to %left
+%nonassoc CASCADE // a -> b
+
+
+//%type <Ast.expr>
+
+%type <expr list> program
+
 
 %start program
 
 %%
 
+
 program:
-| i=INT+; EOF {i}
+| literal+ ; EOF { $1 }
+
+
+literal:
+| int
+| dec
+| char { $1 }
+
+int: INT {
+    EInt($startpos, $1)
+}
+
+dec: DEC {
+    EDec($startpos, $1)
+}
+
+char: CHAR {
+    EChar($startpos, $1)
+}

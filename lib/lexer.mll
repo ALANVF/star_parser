@@ -34,7 +34,7 @@ let horiz = [' ' '\t']
 let newline = '\r' | '\n' | "\r\n"
 let blank = horiz+ (newline+ horiz*)* | newline+ (horiz+ newline*)*
 let line_sep = horiz* (newline+ horiz*)+
-let comma_sep = blank? ',' blank?
+let comma_sep = blank? ',' blank
 let comma = horiz* ',' horiz*
 
 (* worry about multiline strings and interpolation later *)

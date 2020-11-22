@@ -2,9 +2,10 @@
  (name star_parser)
  ;(libraries base menhir)
  (libraries base)
- )
+ (preprocess (pps ppx_import ppx_deriving.show)))
 
 (ocamllex lexer)
 
 (menhir
- (modules parser))
+ (modules parser)
+ (infer true))
