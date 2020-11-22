@@ -55,6 +55,7 @@ rule read_token = parse
 | int as i { INT (Int.of_string i) }
 | dec as d { DEC (Float.of_string d) }
 | '"' { read_string (Buffer.create 10) lexbuf }
+| "#\"" { read_char lexbuf }
 
 | eof { EOF }
 | _ {raise (SyntaxError "wtf")}
@@ -96,6 +97,16 @@ and read_string buf = parse
 }
 | eof { raise (SyntaxError "Unexpected EOF!") }
 | _ { raise (SyntaxError "wtf") }
+
+
+and read_char = parse
+| '\\' { finish_char (read_escape lexbuf) lexbuf }
+| [^ '"' '\\' '\n' '\r' '\t' ] as c { finish_char c lexbuf }
+| _ { raise (SyntaxError "Invalid char!") }
+
+and finish_char c = parse
+| '"' { CHAR c }
+| _ {  raise (SyntaxError "Invalid char!")  }
 
 
 and read_escape = parse

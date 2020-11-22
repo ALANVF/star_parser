@@ -15,6 +15,7 @@
 %token <int> INT
 %token <float> DEC
 %token <string> STR
+%token <char> CHAR
 
 %token EOF
 
