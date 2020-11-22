@@ -39,6 +39,27 @@
 %token TRY
 %token CATCH
 
+%token STATIC
+%token HIDDEN
+%token READONLY
+%token FRIEND
+%token UNORDERED
+%token GETTER
+%token SETTER
+%token MAIN
+%token INLINE
+%token NOINHERIT
+%token PATTERN
+%token ASM
+%token STATEMENT
+%token NATIVE
+%token C_STRUCT
+%token C_UNION
+%token C_ENUM
+%token FLAGS
+%token UNCOUNTED
+%token STRONG
+
 %token <string> IDENT
 %token <string> TYPE_NAME
 %token <string> LABEL

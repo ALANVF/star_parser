@@ -85,6 +85,27 @@ rule read_token = parse
 | "try" { TRY }
 | "catch" { CATCH }
 
+| "static" { STATIC }
+| "hidden" { HIDDEN }
+| "readonly" { READONLY }
+| "friend" { FRIEND }
+| "unordered" { UNORDERED }
+| "getter" { GETTER }
+| "setter" { SETTER }
+| "main" { MAIN }
+| "inline" { INLINE }
+| "noinherit" { NOINHERIT }
+| "pattern" { PATTERN }
+| "asm" { ASM }
+| "statement" { STATEMENT }
+| "native" { NATIVE }
+| "c_struct" { C_STRUCT }
+| "c_union" { C_UNION }
+| "c_enum" { C_ENUM }
+| "flags" { FLAGS }
+| "uncounted" { UNCOUNTED }
+| "strong" { STRONG }
+
 | '#' (ident as id) { TAG id }
 | ':' (ident as id) { PUNNED id }
 | (label as lb) ':' { LABEL lb }
