@@ -614,6 +614,7 @@ let rec pp_expr fmt e =
 
     match e with
     | EName id -> str "EName" @@ show_ident id
+    | ELitsym(l, v) -> str "ELitsym" @@ [%show: loc * string] (l, v);
     | EInt(l, v) -> str "EInt" @@ [%show: loc * int] (l, v)
     | EDec(l, v) -> str "EDec" @@ [%show: loc * float] (l, v)
     | EChar(l, v) -> str "EChar" @@ [%show: loc * char] (l, v)

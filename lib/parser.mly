@@ -242,43 +242,34 @@
 %%
 
 
-program:
-| literal+ ; EOF { $1 }
+program: literal+; EOF { $1 }
 
 
-literal:
-| int
-| dec
-| char
-| str
-| bool
-| this
-| anon_arg
-{ $1 }
+let literal :=
+    | litsym
+    | int
+    | dec
+    | char
+    | str
+    | bool
+    | this
+    | anon_arg
 
-int: INT {
-    EInt($startpos, $1)
-}
+let litsym :=
+    | LITSYM; { ELitsym($startpos, _1) }
+    | Y_SCRIPT; { ELitsym($startpos, "script") }
 
-dec: DEC {
-    EDec($startpos, $1)
-}
+int: INT { EInt($startpos, $1) }
 
-char: CHAR {
-    EChar($startpos, $1)
-}
+dec: DEC { EDec($startpos, $1) }
 
-str: STR {
-    EStr($startpos, $1)
-}
+char: CHAR { EChar($startpos, $1) }
 
-bool: BOOL {
-    EBool($startpos, $1)
-}
+str: STR { EStr($startpos, $1) }
 
-this: THIS {
-    EThis $startpos
-}
+bool: BOOL { EBool($startpos, $1) }
+
+this: THIS { EThis $startpos }
 
 anon_arg: ANON_ARG {
     (* weird menhir bug here? *)
