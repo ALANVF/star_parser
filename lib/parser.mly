@@ -246,6 +246,7 @@ program: literal+; EOF { $1 }
 
 
 let literal :=
+    | name
     | litsym
     | int
     | dec
@@ -258,6 +259,29 @@ let literal :=
 let litsym :=
     | LITSYM; { ELitsym($startpos, _1) }
     | Y_SCRIPT; { ELitsym($startpos, "script") }
+
+let name :=
+    | IDENT; { EName($startpos, _1) }
+    | STATIC; { EName($startpos, "static") }
+    | HIDDEN; { EName($startpos, "hidden") }
+    | READONLY; { EName($startpos, "readonly") }
+    | FRIEND; { EName($startpos, "friend") }
+    | UNORDERED; { EName($startpos, "unordered") }
+    | GETTER; { EName($startpos, "getter") }
+    | SETTER; { EName($startpos, "setter") }
+    | MAIN; { EName($startpos, "main") }
+    | INLINE; { EName($startpos, "inline") }
+    | NOINHERIT; { EName($startpos, "noinherit") }
+    | PATTERN; { EName($startpos, "pattern") }
+    | ASM; { EName($startpos, "asm") }
+    | STATEMENT; { EName($startpos, "statement") }
+    | NATIVE; { EName($startpos, "native") }
+    | C_STRUCT; { EName($startpos, "c_struct") }
+    | C_UNION; { EName($startpos, "c_union") }
+    | C_ENUM; { EName($startpos, "c_enum") }
+    | FLAGS; { EName($startpos, "flags") }
+    | UNCOUNTED; { EName($startpos, "uncounted") }
+    | STRONG; { EName($startpos, "strong") }
 
 int: INT { EInt($startpos, $1) }
 
