@@ -242,7 +242,10 @@
 %%
 
 
-program: literal+; EOF { $1 }
+let program :=
+    p = literal+;
+    EOF;
+    { p }
 
 
 
@@ -269,13 +272,14 @@ let literal :=
     | bool
     | this
     | anon_arg
+    //| expr_type
 
 let litsym :=
-    | LITSYM; { ELitsym($startpos, _1) }
+    | l = LITSYM; { ELitsym($startpos, l) }
     | Y_SCRIPT; { ELitsym($startpos, "script") }
 
 let name :=
-    | IDENT; { EName($startpos, _1) }
+    | i = IDENT; { EName($startpos, i) }
     | STATIC; { EName($startpos, "static") }
     | HIDDEN; { EName($startpos, "hidden") }
     | READONLY; { EName($startpos, "readonly") }
@@ -297,28 +301,30 @@ let name :=
     | UNCOUNTED; { EName($startpos, "uncounted") }
     | STRONG; { EName($startpos, "strong") }
 
-int: INT { EInt($startpos, $1) }
+let int :=
+    i = INT; { EInt($startpos, i) }
 
-dec: DEC { EDec($startpos, $1) }
+let dec :=
+    d = DEC; { EDec($startpos, d) }
 
-char: CHAR { EChar($startpos, $1) }
+let char :=
+    c = CHAR; { EChar($startpos, c) }
 
-str: STR { EStr($startpos, $1) }
+let str :=
+    s = STR; { EStr($startpos, s) }
 
-bool: BOOL { EBool($startpos, $1) }
+let bool :=
+    b = BOOL; { EBool($startpos, b) }
 
-this: THIS { EThis $startpos }
+let this :=
+    THIS; { EThis $startpos }
 
-anon_arg: ANON_ARG {
-    (* weird menhir bug here? *)
-    let loc = $startpos in
-    let (depth, index) = $1 in
-    EAnon_arg {
-        loc;
-        depth;
-        index
+let anon_arg :=
+    (depth, index) = ANON_ARG; {
+        (* weird menhir bug here? *)
+        let loc = $startpos in
+        EAnon_arg {loc; depth; index}
     }
-}
 
 
 // Types
@@ -332,7 +338,7 @@ let type_params :=
     { $startpos(l), p, $startpos(r) }
 
 let named_type_seg ==
-    n = TYPE_NAME; { Type.Name n }
+    ~ = TYPE_NAME; <Type.Name>
 
 let wildcard_type_seg ==
     WILDCARD; { Type.Wildcard }
@@ -355,10 +361,14 @@ let wildcard_type ==
     w = wildcard_short_type; { [w] }
 
 let named_type :=
-    w = terminated(basic_wildcard_short_type, DOT)*;
-    p = separated_nonempty_list(DOT, named_short_type);
-    { w @ p }
+    append(
+        terminated(basic_wildcard_short_type, DOT)*,
+        separated_nonempty_list(DOT, named_short_type)
+    )
 
 let any_type :=
     | named_type
     | wildcard_type
+
+let expr_type :=
+    ~ = any_type; <EType>

@@ -77,8 +77,6 @@ type expr = ..
 
 type single_msg = ident
 
-type cast_msg = Type.t
-
 type multi_label =
     | LNamed of ident * expr
     | LPunned of ident
@@ -93,7 +91,7 @@ type simple_msg = [
 
 type obj_msg = [
     simple_msg
-    | `Cast of cast_msg
+    | `Cast of Type.t
 ]
 
 module Stmt = struct
@@ -611,6 +609,7 @@ let rec pp_expr fmt e =
 
     match e with
     | EName id -> str "EName" @@ show_ident id
+    | EType t -> str "EType" @@ Type.show t
     | ELitsym(l, v) -> str "ELitsym" @@ [%show: loc * string] (l, v);
     | EInt(l, v) -> str "EInt" @@ [%show: loc * int] (l, v)
     | EDec(l, v) -> str "EDec" @@ [%show: loc * float] (l, v)

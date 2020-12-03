@@ -77,8 +77,6 @@ type expr = ..
 
 type single_msg = ident
 
-type cast_msg = Type.t
-
 type multi_label =
     | LNamed of ident * expr
     | LPunned of ident
@@ -93,7 +91,7 @@ type simple_msg = [
 
 type obj_msg = [
     simple_msg
-    | `Cast of cast_msg
+    | `Cast of Type.t
 ]
 
 module Stmt: sig
