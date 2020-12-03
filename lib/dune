@@ -2,7 +2,8 @@
  (name star_parser)
  ;(libraries base menhir)
  (libraries base)
- (preprocess (pps ppx_import ppx_deriving.show)))
+ (preprocess (pps ppx_import ppx_deriving.show))
+ (flags -rectypes))
 
 (ocamllex lexer)
 

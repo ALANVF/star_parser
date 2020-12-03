@@ -2,4 +2,5 @@
  (public_name star_parser)
  (name main)
  (libraries star_parser)
- (preprocess (pps ppx_deriving.show)))
+ (preprocess (pps ppx_deriving.show))
+ (flags -rectypes))

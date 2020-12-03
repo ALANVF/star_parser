@@ -245,6 +245,20 @@
 program: literal+; EOF { $1 }
 
 
+
+// Separators
+
+let comma_sep ==
+    | C_SEP
+    | C_HS
+
+let any_sep ==
+    | comma_sep
+    | L_SEP
+
+
+// Literals
+
 let literal :=
     | name
     | litsym
@@ -305,3 +319,46 @@ anon_arg: ANON_ARG {
         index
     }
 }
+
+
+// Types
+
+let type_params :=
+    l = LBRACKET;
+    L_SEP?;
+    p = separated_nonempty_list(any_sep, any_type);
+    L_SEP?;
+    r = RBRACKET;
+    { $startpos(l), p, $startpos(r) }
+
+let named_type_seg ==
+    n = TYPE_NAME; { Type.Name n }
+
+let wildcard_type_seg ==
+    WILDCARD; { Type.Wildcard }
+
+let named_short_type ==
+    s = named_type_seg;
+    p = type_params?;
+    { $startpos(s), s, p }
+
+let basic_wildcard_short_type ==
+    s = wildcard_type_seg;
+    { $startpos(s), s, None }
+
+let wildcard_short_type ==
+    s = wildcard_type_seg;
+    p = type_params?;
+    { $startpos(s), s, p }
+
+let wildcard_type ==
+    | w = wildcard_short_type; { [w] }
+
+let named_type :=
+    w = terminated(basic_wildcard_short_type, DOT)*;
+    p = separated_nonempty_list(DOT, named_short_type);
+    { w @ p }
+
+let any_type :=
+    | named_type
+    | wildcard_type

@@ -12,12 +12,9 @@ module Type = struct
         | Name of string
     [@@deriving show]
 
-    type param = {loc: loc; t: t'}
-    [@@deriving show]
+    type params = t list delims_loc [@@deriving show]
 
-    and t' = (segment * param list) list [@@deriving show]
-
-    and t = loc * t' [@@deriving show]
+    and t = (loc * segment * params option) list [@@deriving show]
 end
 
 type types_spec = [
