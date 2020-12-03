@@ -352,7 +352,7 @@ let wildcard_short_type ==
     { $startpos(s), s, p }
 
 let wildcard_type ==
-    | w = wildcard_short_type; { [w] }
+    w = wildcard_short_type; { [w] }
 
 let named_type :=
     w = terminated(basic_wildcard_short_type, DOT)*;
