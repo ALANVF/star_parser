@@ -212,9 +212,8 @@
 
 %right STARSTAR // a ** b
 
-//%nonassoc tag
-
 %nonassoc
+    TAG        // #a b
     PLUSPLUS   // ++a, a++
     MINUSMINUS // --a, a--
 
@@ -224,17 +223,27 @@
 
 %left BANG // !a
 
+// maybe change to %left
+%nonassoc CASCADE // a -> b
+
+%nonassoc below_postfix_msg
+
 %right QUESTION // a?
 
 %left DOT // a.b
 
-// maybe change to %left
-%nonassoc CASCADE // a -> b
-
 
 //%type <Ast.expr>
 
-%type <expr list> program
+%type <Expr.t list> program
+
+%type <Expr.t> literal basic_expr expr paren_expr full_expr
+
+%type <Message.multi> multi_msg_contents
+%type <Message.simple> simple_msg_contents
+%type <Message.obj> obj_msg_contents
+
+%type <Type.t> named_type wildcard_type
 
 
 %start program
@@ -243,10 +252,18 @@
 
 
 let program :=
-    p = literal+;
+    p = expr+;
     EOF;
     { p }
 
+
+// Util
+
+let wpos(rule) ==
+    ~ = rule; { $startpos, rule }
+
+let pos(rule) ==
+    rule; { $startpos }
 
 
 // Separators
@@ -258,6 +275,79 @@ let comma_sep ==
 let any_sep ==
     | comma_sep
     | L_SEP
+
+
+// General
+
+let ident :=
+    | IDENT
+    | STATIC; { "static" }
+    | HIDDEN; { "hidden" }
+    | READONLY; { "readonly" }
+    | FRIEND; { "friend" }
+    | UNORDERED; { "unordered" }
+    | GETTER; { "getter" }
+    | SETTER; { "setter" }
+    | MAIN; { "main" }
+    | INLINE; { "inline" }
+    | NOINHERIT; { "noinherit" }
+    | PATTERN; { "pattern" }
+    | ASM; { "asm" }
+    | STATEMENT; { "statement" }
+    | NATIVE; { "native" }
+    | C_STRUCT; { "c_struct" }
+    | C_UNION; { "c_union" }
+    | C_ENUM; { "c_enum" }
+    | FLAGS; { "flags" }
+    | UNCOUNTED; { "uncounted" }
+    | STRONG; { "strong" }
+
+let any_ident :=
+    | ident
+    | MODULE; { "module" }
+    | MACRO; { "macro" }
+    | MY; { "my" }
+    | ON; { "on" }
+    | RETURN; { "return" }
+    | INIT; { "init" }
+    | DEINIT; { "deinit" }
+    | OPERATOR; { "operator" }
+    | CLASS; { "class" }
+    | ALIAS; { "alias" }
+    | TYPE; { "type" }
+    | KIND; { "kind" }
+    | CATEGORY; { "category" }
+    | PROTOCOL; { "protocol" }
+    | IS; { "is" }
+    | OF; { "of" }
+    | USE; { "use" }
+    | HAS; { "has" }
+    | IF; { "if" }
+    | ORIF; { "orif" }
+    | ELSE; { "else" }
+    | WHILE; { "while" }
+    | FOR; { "for" }
+    | DO; { "do" }
+    | CASE; { "case" }
+    | MATCH; { "match" }
+    | AT; { "at" }
+    | BREAK; { "break" }
+    | NEXT; { "next" }
+    | THROW; { "throw" }
+    | TRY; { "try" }
+    | CATCH; { "catch" }
+    | b = BOOL; { if b then "true" else "false" }
+    | THIS; { "this" }
+
+let label :=
+    | LABEL
+    | L_IN; { "in" }
+    | L_FROM; { "from" }
+    | L_TO; { "to" }
+    | L_UPTO; { "upto" }
+    | L_DOWNTO; { "downto" }
+    | L_BY; { "by" }
+    | L_WHILE; { "while" }
 
 
 // Literals
@@ -275,55 +365,35 @@ let literal :=
     //| expr_type
 
 let litsym :=
-    | l = LITSYM; { ELitsym($startpos, l) }
-    | Y_SCRIPT; { ELitsym($startpos, "script") }
+    | l = LITSYM; { Expr.Litsym($startpos, l) }
+    | Y_SCRIPT; { Expr.Litsym($startpos, "script") }
 
 let name :=
-    | i = IDENT; { EName($startpos, i) }
-    | STATIC; { EName($startpos, "static") }
-    | HIDDEN; { EName($startpos, "hidden") }
-    | READONLY; { EName($startpos, "readonly") }
-    | FRIEND; { EName($startpos, "friend") }
-    | UNORDERED; { EName($startpos, "unordered") }
-    | GETTER; { EName($startpos, "getter") }
-    | SETTER; { EName($startpos, "setter") }
-    | MAIN; { EName($startpos, "main") }
-    | INLINE; { EName($startpos, "inline") }
-    | NOINHERIT; { EName($startpos, "noinherit") }
-    | PATTERN; { EName($startpos, "pattern") }
-    | ASM; { EName($startpos, "asm") }
-    | STATEMENT; { EName($startpos, "statement") }
-    | NATIVE; { EName($startpos, "native") }
-    | C_STRUCT; { EName($startpos, "c_struct") }
-    | C_UNION; { EName($startpos, "c_union") }
-    | C_ENUM; { EName($startpos, "c_enum") }
-    | FLAGS; { EName($startpos, "flags") }
-    | UNCOUNTED; { EName($startpos, "uncounted") }
-    | STRONG; { EName($startpos, "strong") }
+    i = ident; { Expr.Name($startpos, i) }
 
 let int :=
-    i = INT; { EInt($startpos, i) }
+    i = INT; { Expr.Int($startpos, i) }
 
 let dec :=
-    d = DEC; { EDec($startpos, d) }
+    d = DEC; { Expr.Dec($startpos, d) }
 
 let char :=
-    c = CHAR; { EChar($startpos, c) }
+    c = CHAR; { Expr.Char($startpos, c) }
 
 let str :=
-    s = STR; { EStr($startpos, s) }
+    s = STR; { Expr.Str($startpos, s) }
 
 let bool :=
-    b = BOOL; { EBool($startpos, b) }
+    b = BOOL; { Expr.Bool($startpos, b) }
 
 let this :=
-    THIS; { EThis $startpos }
+    THIS; { Expr.This $startpos }
 
 let anon_arg :=
     (depth, index) = ANON_ARG; {
         (* weird menhir bug here? *)
         let loc = $startpos in
-        EAnon_arg {loc; depth; index}
+        Expr.Anon_arg {loc; depth; index}
     }
 
 
@@ -371,4 +441,116 @@ let any_type :=
     | wildcard_type
 
 let expr_type :=
-    ~ = any_type; <EType>
+    ~ = any_type; <Expr.Type>
+
+
+// Delimiters
+
+let delims_of(l, rule, r) ==
+    ~ = l;
+    ~ = rule;
+    ~ = r;
+    { $startpos(l), rule, $startpos(r) }
+
+(*let assoc_of(l, elem, r) ==
+    ~ = l;
+    L_SEP?;
+    elems = separated_list(any_sep, elem);
+    L_SEP?;
+    ~ = r;
+    { $startpos(l), elems, $startpos(r) }*)
+let assoc_of(l, elem, r) ==
+    delims_of(
+        terminated(l, L_SEP?),
+        separated_list(any_sep, elem),
+        preceded(L_SEP?, r)
+    )
+
+let array_of(elem) ==
+    assoc_of(HASHLBRACKET, elem, RBRACKET)
+
+let hash_of(k, v) ==
+    assoc_of(HASHLPAREN, separated_pair(k, EQGT, v), RPAREN)
+
+let tuple_of(elem) == 
+    assoc_of(HASHLBRACE, elem, RBRACE)
+
+
+// Expressions
+
+let basic_expr :=
+    | literal
+    | array
+    | hash
+    | tuple
+    | paren
+    //| func
+    //| block
+    //| objc_call
+
+let array :=
+    ~ = array_of(full_expr); <Expr.Array>
+
+let hash :=
+    ~ = hash_of(basic_expr, full_expr); <Expr.Hash>
+
+let tuple :=
+    ~ = tuple_of(full_expr); <Expr.Tuple>
+
+let paren :=
+    ~ = delims_of(
+        terminated(LPAREN, L_SEP?),
+        separated_nonempty_list(comma_sep, paren_expr),
+        preceded(L_SEP?, RPAREN)
+    );
+    <Expr.Paren>
+
+
+let multi_msg_begin ==
+    | ~ = wpos(PUNNED); <Label.Punned>
+    | ~ = wpos(label); ~ = full_expr; <Label.Named>
+
+let multi_msg_contents :=
+    b = multi_msg_begin;
+    r = list(
+        | preceded(any_sep?, multi_msg_begin)
+        | ~ = preceded(comma_sep, full_expr); <Label.Anon>
+    );
+    { b :: r }
+
+let simple_msg_contents ==
+    | s = wpos(ident); { `Single s }
+    | m = multi_msg_contents; { `Multi m }
+
+let obj_msg_contents ==
+    | s = simple_msg_contents; { (s :> Message.obj) }
+    | c = named_type; { `Cast c }
+
+let msg_of(contents) ==
+    terminated(LBRACKET, L_SEP?);
+    ~ = contents;
+    preceded(L_SEP?, RBRACKET);
+    <>
+
+let simple_msg :=
+    msg_of(simple_msg_contents)
+
+let obj_msg :=
+    msg_of(obj_msg_contents)
+
+
+let expr_of(self, sep) :=
+    | ~ = self; ~ = obj_msg; <Expr.Obj_message> %prec below_postfix_msg
+
+    | b = pos(BANG); e = self; { Expr.Prefix(b, Prefix.Not, e) }
+
+    | basic_expr
+
+let expr :=
+    expr_of(expr, {()})
+
+let paren_expr :=
+    expr_of(paren_expr, L_SEP?)
+
+let full_expr :=
+    expr

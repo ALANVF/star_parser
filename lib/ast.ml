@@ -73,179 +73,352 @@ module Infix = struct
     ] [@@deriving show]
 end
 
-type expr = ..
 
-type single_msg = ident
-
-type multi_label =
-    | LNamed of ident * expr
-    | LPunned of ident
-    | LAnon of expr
-
-type multi_msg = multi_label list
-
-type simple_msg = [
-    | `Single of single_msg
-    | `Multi of multi_msg
-]
-
-type obj_msg = [
-    simple_msg
-    | `Cast of Type.t
-]
-
-module Stmt = struct
-    module Match_expr = struct
-        type expr +=
-            | ECapture of {
-                loc: loc;
-                name: ident;
-                t: Type.t option;
-                value: expr option
-            }
-    end
-
-    type loop_end =
-        | Loop_to
-        | Loop_upto
-        | Loop_downto
-
-    type block = t list delims_loc
-
-    and t =
-        | SExpr of expr
-        | SVar_decl of {
-            loc: loc;
-            name: ident;
-            t: Type.t option;
-            value: expr option
-        }
-        | SIf of {
-            loc: loc;
-            cond: expr;
-            then_blk: block;
-            others: (loc * expr * block) list;
-            else_blk: (loc * block) option
-        }
-        | SCase of {
-            loc: loc;
-            begin_loc: loc;
-            cases: (loc * expr * block) list;
-            default: (loc * block) option;
-            end_loc: loc
-        }
-        | SMatch of {
-            loc: loc;
-            value: expr;
-            begin_loc: loc;
-            cases: (loc * expr list * (loc * expr) option * block) list;
-            default: (loc * block) option;
-            end_loc: loc
-        }
-        | SShortMatch of {
-            loc: loc;
-            value: expr;
-            loc2: loc;
-            pattern: expr;
-            cond: (loc * expr) option;
-            then_blk: block;
-            else_blk: (loc * block) option
-        }
-        | SWhile of {
-            loc: loc;
-            cond: expr;
-            block: block
-        }
-        | SDo_while of {
-            loc: loc;
-            block: block;
-            loc2: loc;
-            cond: expr;
-        }
-        | SFor_in of {
-            loc: loc;
-            var: ident * Type.t option;
-            var2: (ident * Type.t option) option;
-            in': loc * expr;
-            while': (loc * expr) option;
-            block: block
-        }
-        | SFor_range of {
-            loc: loc;
-            var: ident * Type.t option;
-            from: loc * expr;
-            to': loc * loop_end * expr;
-            by: (loc * expr) option;
-            while': (loc * expr) option;
-            block: block
-        }
-        | SDo of loc * block
-        | SReturn of loc * expr option
-        | SBreak of loc * (loc * int) option
-        | SNext of loc * (loc * int) option
-        | SThrow of loc * expr
-        | STry of {
-            loc: loc;
-            block: block;
-            cases: (loc * ident * Type.t * block) list
-        }
+module rec Label: sig
+    type multi =
+        | Named of ident * Expr.t
+        | Punned of ident
+        | Anon of Expr.t
+    [@@deriving show]
+end = struct
+    type multi =
+        | Named of ident * Expr.t
+        | Punned of ident
+        | Anon of Expr.t
+    [@@deriving show]
 end
 
-module Cascade = struct
+and Message: sig
+    type multi = Label.multi list [@@deriving show]
+
+    type simple = [
+        | `Single of ident
+        | `Multi of multi
+    ] [@@deriving show]
+
+    type obj = [
+        simple
+        | `Cast of Type.t
+    ] [@@deriving show]
+end = struct
+    type multi = Label.multi list [@@deriving show]
+
+    type simple = [
+        | `Single of ident
+        | `Multi of multi
+    ] [@@deriving show]
+
+    type obj = [
+        simple
+        | `Cast of Type.t
+    ] [@@deriving show]
+end
+
+and Cascade: sig
     type k =
-        | Message of simple_msg
-        | Assign of ident * loc * expr
-        | AssignMsg of simple_msg * loc * expr
+        | Message of Message.simple
+        | Assign of ident * loc * Expr.t
+        | AssignMsg of Message.simple * loc * Expr.t
         | Block of Stmt.block
-    
+    [@@deriving show]
+
     type t = {
         loc: loc;
         depth: int;
         kind_loc: loc;
         kind: k;
         nested: t list
-    }
+    } [@@deriving show]
+end = struct
+    type k =
+        | Message of Message.simple
+        | Assign of ident * loc * Expr.t
+        | AssignMsg of Message.simple * loc * Expr.t
+        | Block of Stmt.block
+    [@@deriving show]
+
+    type t = {
+        loc: loc;
+        depth: int;
+        kind_loc: loc;
+        kind: k;
+        nested: t list
+    } [@@deriving show]
 end
 
-type expr +=
-    | EName of ident
-    | EType of Type.t
-    | ELitsym of loc * string
-    
-    | ETag of ident * expr
+and Expr: sig
+    type t =
+        | Name of ident
+        | Type of Type.t
+        | Litsym of loc * string
+        
+        | Tag of ident * t
 
-    | EInt of loc * int
-    | EDec of loc * float
-    | EChar of loc * char
-    | EStr of loc * string (* add interpolation later *)
-    | EBool of loc * bool
-    | EArray of loc * expr list
-    | EHash of loc * (expr * expr) list
-    | ETuple of loc * expr list
-    | EThis of loc
-    | EWildcard of loc
-    | EFunc of {
-        loc: loc;
-        params: (ident * Type.t option) list;
-        return: Type.t option;
-        body: Stmt.t list
-    }
-    | EAnon_arg of {loc: loc; depth: int; index: int}
-    
-    | EParen of loc * expr list
-    | EBlock of Stmt.block
+        | Int of loc * int
+        | Dec of loc * float
+        | Char of loc * char
+        | Str of loc * string (* add interpolation later *)
+        | Bool of loc * bool
+        | Array of t list delims_loc
+        | Hash of (t * t) list delims_loc
+        | Tuple of t list delims_loc
+        | This of loc
+        | Wildcard of loc
+        | Func of {
+            loc: loc;
+            params: (ident * Type.t option) list;
+            return: Type.t option;
+            body: Stmt.t list
+        }
+        | Anon_arg of {loc: loc; depth: int; index: int}
+        
+        | Paren of t list delims_loc
+        | Block of Stmt.block
 
-    | EType_msg of loc * Type.t * simple_msg
-    | EType_cascade of Type.t * Cascade.t list
+        | Type_message of loc * Type.t * Message.simple
+        | Type_cascade of Type.t * Cascade.t list
 
-    | EObj_msg of expr * obj_msg
-    | EObj_cascade of expr * Cascade.t list
+        | Obj_message of t * Message.obj
+        | Obj_cascade of t * Cascade.t list
 
-    | EMember of expr * string
+        | Member of t * string
 
-    | EPrefix of loc * Prefix.t * expr
-    | EPostfix of expr * loc * Postfix.t
-    | EInfix of expr * loc * Infix.t * expr
+        | Prefix of loc * Prefix.t * t
+        | Postfix of t * loc * Postfix.t
+        | Infix of t * loc * Infix.t * t
+
+        | Capture of {
+            loc: loc;
+            name: ident;
+            t: Type.t option;
+            value: t option
+        }
+    [@@deriving show]
+end = struct
+    type t =
+        | Name of ident
+        | Type of Type.t
+        | Litsym of loc * string
+        
+        | Tag of ident * t
+
+        | Int of loc * int
+        | Dec of loc * float
+        | Char of loc * char
+        | Str of loc * string (* add interpolation later *)
+        | Bool of loc * bool
+        | Array of t list delims_loc
+        | Hash of (t * t) list delims_loc
+        | Tuple of t list delims_loc
+        | This of loc
+        | Wildcard of loc
+        | Func of {
+            loc: loc;
+            params: (ident * Type.t option) list;
+            return: Type.t option;
+            body: Stmt.t list
+        }
+        | Anon_arg of {loc: loc; depth: int; index: int}
+        
+        | Paren of t list delims_loc
+        | Block of Stmt.block
+
+        | Type_message of loc * Type.t * Message.simple
+        | Type_cascade of Type.t * Cascade.t list
+
+        | Obj_message of t * Message.obj
+        | Obj_cascade of t * Cascade.t list
+
+        | Member of t * string
+
+        | Prefix of loc * Prefix.t * t
+        | Postfix of t * loc * Postfix.t
+        | Infix of t * loc * Infix.t * t
+
+        | Capture of {
+            loc: loc;
+            name: ident;
+            t: Type.t option;
+            value: t option
+        }
+    [@@deriving show]
+end
+
+and Stmt: sig
+    type loop_end =
+        | Loop_to
+        | Loop_upto
+        | Loop_downto
+    [@@deriving show]
+
+    type block = t list delims_loc [@@deriving show]
+
+    and t =
+        | SExpr of Expr.t
+        | SVar_decl of {
+            loc: loc;
+            name: ident;
+            t: Type.t option;
+            value: Expr.t option
+        }
+        | SIf of {
+            loc: loc;
+            cond: Expr.t;
+            then_blk: block;
+            others: (loc * Expr.t * block) list;
+            else_blk: (loc * block) option
+        }
+        | SCase of {
+            loc: loc;
+            begin_loc: loc;
+            cases: (loc * Expr.t * block) list;
+            default: (loc * block) option;
+            end_loc: loc
+        }
+        | SMatch of {
+            loc: loc;
+            value: Expr.t;
+            begin_loc: loc;
+            cases: (loc * Expr.t list * (loc * Expr.t) option * block) list;
+            default: (loc * block) option;
+            end_loc: loc
+        }
+        | SShortMatch of {
+            loc: loc;
+            value: Expr.t;
+            loc2: loc;
+            pattern: Expr.t;
+            cond: (loc * Expr.t) option;
+            then_blk: block;
+            else_blk: (loc * block) option
+        }
+        | SWhile of {
+            loc: loc;
+            cond: Expr.t;
+            block: block
+        }
+        | SDo_while of {
+            loc: loc;
+            block: block;
+            loc2: loc;
+            cond: Expr.t;
+        }
+        | SFor_in of {
+            loc: loc;
+            var: ident * Type.t option;
+            var2: (ident * Type.t option) option;
+            in': loc * Expr.t;
+            while': (loc * Expr.t) option;
+            block: block
+        }
+        | SFor_range of {
+            loc: loc;
+            var: ident * Type.t option;
+            from: loc * Expr.t;
+            to': loc * loop_end * Expr.t;
+            by: (loc * Expr.t) option;
+            while': (loc * Expr.t) option;
+            block: block
+        }
+        | SDo of loc * block
+        | SReturn of loc * Expr.t option
+        | SBreak of loc * (loc * int) option
+        | SNext of loc * (loc * int) option
+        | SThrow of loc * Expr.t
+        | STry of {
+            loc: loc;
+            block: block;
+            cases: (loc * ident * Type.t * block) list
+        }
+    [@@deriving show]
+end = struct
+    type loop_end =
+        | Loop_to
+        | Loop_upto
+        | Loop_downto
+    [@@deriving show]
+
+    type block = t list delims_loc [@@deriving show]
+
+    and t =
+        | SExpr of Expr.t
+        | SVar_decl of {
+            loc: loc;
+            name: ident;
+            t: Type.t option;
+            value: Expr.t option
+        }
+        | SIf of {
+            loc: loc;
+            cond: Expr.t;
+            then_blk: block;
+            others: (loc * Expr.t * block) list;
+            else_blk: (loc * block) option
+        }
+        | SCase of {
+            loc: loc;
+            begin_loc: loc;
+            cases: (loc * Expr.t * block) list;
+            default: (loc * block) option;
+            end_loc: loc
+        }
+        | SMatch of {
+            loc: loc;
+            value: Expr.t;
+            begin_loc: loc;
+            cases: (loc * Expr.t list * (loc * Expr.t) option * block) list;
+            default: (loc * block) option;
+            end_loc: loc
+        }
+        | SShortMatch of {
+            loc: loc;
+            value: Expr.t;
+            loc2: loc;
+            pattern: Expr.t;
+            cond: (loc * Expr.t) option;
+            then_blk: block;
+            else_blk: (loc * block) option
+        }
+        | SWhile of {
+            loc: loc;
+            cond: Expr.t;
+            block: block
+        }
+        | SDo_while of {
+            loc: loc;
+            block: block;
+            loc2: loc;
+            cond: Expr.t;
+        }
+        | SFor_in of {
+            loc: loc;
+            var: ident * Type.t option;
+            var2: (ident * Type.t option) option;
+            in': loc * Expr.t;
+            while': (loc * Expr.t) option;
+            block: block
+        }
+        | SFor_range of {
+            loc: loc;
+            var: ident * Type.t option;
+            from: loc * Expr.t;
+            to': loc * loop_end * Expr.t;
+            by: (loc * Expr.t) option;
+            while': (loc * Expr.t) option;
+            block: block
+        }
+        | SDo of loc * block
+        | SReturn of loc * Expr.t option
+        | SBreak of loc * (loc * int) option
+        | SNext of loc * (loc * int) option
+        | SThrow of loc * Expr.t
+        | STry of {
+            loc: loc;
+            block: block;
+            cases: (loc * ident * Type.t * block) list
+        }
+    [@@deriving show]
+end
 
 
 module Decls = struct
@@ -292,7 +465,7 @@ module Decls = struct
             name: ident;
             t: Type.t option;
             attrs: Attr.t list;
-            value: (loc * expr) option
+            value: (loc * Expr.t) option
         }
     end
     
@@ -311,7 +484,7 @@ module Decls = struct
         type k = [
             | `Is_hidden
             | `Is_friend of types_spec
-            | `Is_native of (ident * expr) list delims_loc
+            | `Is_native of (ident * Expr.t) list delims_loc
         ]
 
         type t = loc * loc * k
@@ -352,7 +525,7 @@ module Decls = struct
         ]
 
         type k =
-            | Named of ident * (loc * expr) option
+            | Named of ident * (loc * Expr.t) option
             | Tagged of tag delims_loc
         
         type t = {
@@ -595,47 +768,3 @@ module Program = struct
         | Modular of modular list
         | Script of script list
 end
-
-
-let rec pp_expr fmt e =
-    (*let open Stmt.Match_expr in*)
-    let open Caml.Format in
-
-    let str = fprintf fmt "%s %s" in
-
-    let module Anon_arg = struct
-        type t = {loc: loc; depth: int; index:int} [@@deriving show]
-    end in
-
-    match e with
-    | EName id -> str "EName" @@ show_ident id
-    | EType t -> str "EType" @@ Type.show t
-    | ELitsym(l, v) -> str "ELitsym" @@ [%show: loc * string] (l, v);
-    | EInt(l, v) -> str "EInt" @@ [%show: loc * int] (l, v)
-    | EDec(l, v) -> str "EDec" @@ [%show: loc * float] (l, v)
-    | EChar(l, v) -> str "EChar" @@ [%show: loc * char] (l, v)
-    | EStr(l, v) -> str "EStr" @@ [%show: loc * string] (l, v)
-    | EBool(l, v) -> str "EBool" @@ [%show: loc * bool] (l, v)
-    | EArray(l, v) -> str "EArray" @@ [%show: loc * expr list] (l, v)
-    | EHash(l, v) -> str "EHash" @@ [%show: loc * (expr * expr) list] (l, v)
-    | ETuple(l, v) -> str "ETuple" @@ [%show: loc * expr list] (l, v)
-    | EThis l -> str "EThis" @@ show_loc l
-    | EWildcard l -> str "EWildcard" @@ show_loc l
-    | EAnon_arg {loc; depth; index} -> let open Anon_arg in str "EAnon_arg" @@ [%show: t] {loc; depth; index} (* hack *)
-    | _ -> ()
-
-and pp_multi_label fmt l =
-    let open Caml.Format in
-    match l with
-    | LNamed(i, e) ->
-        pp_print_text fmt "LNamed (";
-        pp_ident fmt i;
-        pp_print_text fmt ", ";
-        pp_expr fmt e;
-        pp_print_string fmt ")"
-    | LPunned i ->
-        pp_print_text fmt "LPunned ";
-        pp_ident fmt i
-    | LAnon e ->
-        pp_print_text fmt "LAnon ";
-        pp_expr fmt e
