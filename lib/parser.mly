@@ -558,6 +558,7 @@ let op_1 ==
     | DIV; { `Div }
     | DIVDIV; { `IntDiv }
     | MOD; { `Mod }
+    | PLUS; { `Plus }
 
 let expr_of(self, sep) :=
     | ~ = named_type_expr; DOT; ~ = ident; <Expr.Member> %prec below_top
@@ -571,6 +572,8 @@ let expr_of(self, sep) :=
     | e = self; o = midrule(pos(MINUSMINUS)); { Expr.Postfix(e, o, Postfix.Decr) } %prec below_incr_decr
 
     | o = pos(BANG); e = self; { Expr.Prefix(o, Prefix.Not, e) }
+
+    | l = self; p = pos(MINUS); r = self; { Expr.Infix(l, p, `Minus, r) }
 
     | o = pos(TILDE); e = self; { Expr.Prefix(o, Prefix.Compl, e) }
     | o = pos(MINUS); e = self; { Expr.Prefix(o, Prefix.Neg, e) } %prec unary_minus
