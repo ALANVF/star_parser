@@ -55,6 +55,10 @@ module Infix: sig
         | `BitXor
         | `Shl
         | `Shr
+        | `And
+        | `Or
+        | `Xor
+        | `Nor
     ] [@@deriving show]
 
     type t = [
@@ -65,10 +69,6 @@ module Infix: sig
         | `Ge
         | `Lt
         | `Le
-        | `And
-        | `Or
-        | `Xor
-        | `Nor
         | `Assign of assignable option
     ] [@@deriving show]
 end

@@ -69,7 +69,10 @@ let () =
             no: 2]";
         "1[to: 10][Array[Int]]";
         "!1[Bool]";
-        "(!1)[Bool]"
+        "(!1)[Bool]";
+        "A[b]";
+        "A[B][c]";
+        "A[B].C[d]"
     ];
 
     print_endline "\nUnary operators:";
@@ -99,5 +102,6 @@ let () =
         "1 * 2 ** 3 / 4 ** 5 ** 6 % 7";
         "a.b * C.d / e.f";
         "-a + -b";
-        "-a - -b"
+        "-a - -b";
+        "1 + 2 * 3"
     ];

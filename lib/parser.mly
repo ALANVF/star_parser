@@ -2,9 +2,9 @@
     open Ast
 %}
 
-%token C_SEP
-%token C_HS
-%token L_SEP
+%token C_SEP ",sep"
+%token C_HS ","
+%token L_SEP "sep"
 
 %token MODULE
 %token MACRO
@@ -70,65 +70,65 @@
 
 %token Y_SCRIPT
 
-%token TILDE
-%token DOT
-%token EQ
-%token EQGT
-%token PLUS
-%token PLUSEQ
-%token PLUSPLUS
-%token MINUS
-%token MINUSEQ
-%token MINUSMINUS
-%token STAR
-%token STAREQ
-%token STARSTAR
-%token STARSTAREQ
-%token DIV
-%token DIVEQ
-%token DIVDIV
-%token DIVDIVEQ
-%token MOD
-%token MODEQ
-%token MODMOD
-%token MODMODEQ
-%token AND
-%token ANDEQ
-%token ANDAND
-%token ANDANDEQ
-%token BAR
-%token BAREQ
-%token BARBAR
-%token BARBAREQ
-%token CARET
-%token CARETEQ
-%token CARETCARET
-%token CARETCARETEQ
-%token BANG
-%token BANGEQ
-%token BANGBANG
-%token BANGBANGEQ
-%token QUESTION
-%token QUESTIONEQ
-%token GT
-%token GTEQ
-%token GTGT
-%token GTGTEQ
-%token LT
-%token LTEQ
-%token LTLT
-%token LTLTEQ
-%token <int> CASCADE
+%token TILDE "~"
+%token DOT "."
+%token EQ "="
+%token EQGT "=>"
+%token PLUS "+"
+%token PLUSEQ "+="
+%token PLUSPLUS "++"
+%token MINUS "-"
+%token MINUSEQ "-="
+%token MINUSMINUS "--"
+%token STAR "*"
+%token STAREQ "*="
+%token STARSTAR "**"
+%token STARSTAREQ "**="
+%token DIV "/"
+%token DIVEQ "/="
+%token DIVDIV "//"
+%token DIVDIVEQ "//="
+%token MOD "%"
+%token MODEQ "%="
+%token MODMOD "%%"
+%token MODMODEQ "%%="
+%token AND "&"
+%token ANDEQ "&="
+%token ANDAND "&&"
+%token ANDANDEQ "&&="
+%token BAR "|"
+%token BAREQ "|="
+%token BARBAR "||"
+%token BARBAREQ "||="
+%token CARET "^"
+%token CARETEQ "^="
+%token CARETCARET "^^"
+%token CARETCARETEQ "^^="
+%token BANG "!"
+%token BANGEQ "!="
+%token BANGBANG "!!"
+%token BANGBANGEQ "!!="
+%token QUESTION "?"
+%token QUESTIONEQ "?="
+%token GT ">"
+%token GTEQ ">="
+%token GTGT ">>"
+%token GTGTEQ ">>="
+%token LT "<"
+%token LTEQ "<="
+%token LTLT "<<"
+%token LTLTEQ "<<="
+%token <int> CASCADE "->"
 
-%token LPAREN
-%token LBRACKET
-%token LBRACE
-%token HASHLPAREN
-%token HASHLBRACKET
-%token HASHLBRACE
-%token RPAREN
-%token RBRACKET
-%token RBRACE
+%token LPAREN "("
+%token LBRACKET "["
+%token LBRACE "{"
+%token HASHLPAREN "#("
+%token HASHLBRACKET "#["
+%token HASHLBRACE "#{"
+%token RPAREN ")"
+%token RBRACKET "]"
+%token RBRACE "}"
 
 %token <string> IDENT
 %token <string> TYPE_NAME
@@ -143,117 +143,48 @@
 %token <char> CHAR
 %token <bool> BOOL
 %token THIS
-%token WILDCARD
+%token WILDCARD "_"
 %token <(* depth * nth *) int * int> ANON_ARG
 
 %token EOF
 
 
-%nonassoc
-    C_SEP // a <newline>? , <newline> b
-    L_SEP // a <newline> b
-
-%left C_HS // a , b
-
-%right EQGT // a => b
-
-%right
-    EQ           // a = b
-    PLUSEQ       // a += b
-    MINUSEQ      // a -= b
-    STAREQ       // a *= b
-    STARSTAREQ   // a **= b
-    DIVEQ        // a /= b
-    DIVDIVEQ     // a //= b
-    MODEQ        // a %= b
-    MODMODEQ     // a %%= b
-    ANDEQ        // a &= b
-    ANDANDEQ     // a &&= b
-    BAREQ        // a |= b
-    BARBAREQ     // a ||= b
-    CARETEQ      // a ^= b
-    CARETCARETEQ // a ^^= b
-    BANGBANGEQ   // a !!= b
-    GTGTEQ       // a >>= b
-    LTLTEQ       // a >>= b
-
-%left
-    ANDAND     // a && b
-    BARBAR     // a || b
-    CARETCARET // a ^^ b
-    BANGBANG   // a !! b
-
-%left
-    QUESTIONEQ // a ?= b
-    BANGEQ     // a != b
-    GT         // a > b
-    GTEQ       // a >= b
-    LT         // a < b
-    LTEQ       // a <= b
-
-%left
-    AND   // a & b
-    OR    // a | b
-    CARET // a ^ b
-    GTGT  // a >> b
-    LTLT  // a << b
-
-%left MODMOD // a %% b
-
-%left
-    PLUS  // a + b
-    MINUS // a - b
-
-%left
-    STAR   // a * b
-    DIV    // a / b
-    DIVDIV // a // b
-    MOD    // a % b
-
-%right STARSTAR // a ** b
-
-%nonassoc TAG // #a b
-
-%right QUESTION // a?
-
-%right
-    TILDE       // ~a
-    unary_minus // -a
-
-%left BANG // !a
-
-%nonassoc below_incr_decr
-
-%nonassoc
-    PLUSPLUS  // ++a, --a
-    MINUSMINUS // a++, a--
-
-// maybe change to %left
-%nonassoc CASCADE // a -> b
-
-%nonassoc below_top
-
-%right DOT // a.b
-
-%nonassoc top_prec
+%nonassoc ",sep" "sep"
+%left ","
+%right "=>"
+%right "=" "+=" "-=" "*=" "**=" "/=" "//=" "%=" "%%=" "&=" "&&=" "|=" "||=" "^=" "^^=" "!!=" ">>=" "<<="
+%left "&&" "||" "^^" "!!"
+%left "?=" "!=" ">" ">=" "<" "<="
+%left "&" "|" "^" ">>" "<<"
+%left "%%"
+%left "+" "-"
+%left "*" "/" "//" "%"
+%right "**"
+%nonassoc TAG
+%right "?"
+%right "~" unary_minus
+%left "!"
+//%nonassoc below_incr_decr
+%nonassoc "++" "--"
+%nonassoc "->" // maybe change to %left
+//%nonassoc below_top
+%right "."
 
 
 //%type <Ast.expr>
 
 %type <Expr.t list> program
 
-%type <Expr.t> literal basic_expr expr paren_expr full_expr type_expr named_type_expr
+%type <Expr.t> literal basic_expr expr paren_expr full_expr type_expr named_type_expr fix_type_expr
 
 %type <Message.multi> multi_msg_contents
 %type <Message.simple> simple_msg_contents
 %type <Message.obj> obj_msg_contents
 
-%type <Type.t> named_type wildcard_type any_type
+%type <Type.t> named_type wildcard_type any_type fix_type_begin
 
 
 %start program
-
-//%on_error_reduce named_type_expr named_type named_short_type named_type_seg
 
 %%
 
@@ -276,12 +207,12 @@ let pos(rule) ==
 // Separators
 
 let comma_sep ==
-    | C_SEP
-    | C_HS
+    | ",sep"
+    | ","
 
 let any_sep ==
     | comma_sep
-    | L_SEP
+    | "sep"
 
 
 // General
@@ -406,20 +337,22 @@ let anon_arg :=
 // Types
 
 let type_params :=
-    l = LBRACKET;
-    L_SEP?;
-    p = separated_nonempty_list(any_sep, any_type);
-    L_SEP?;
-    r = RBRACKET;
-    { $startpos(l), p, $startpos(r) }
+    ~ = pos(terminated("[", "sep"?));
+    ~ = separated_nonempty_list(any_sep, any_type);
+    ~ = pos(preceded("sep"?, "]"));
+    <>
 
 let named_type_seg ==
     ~ = TYPE_NAME; <Type.Name>
 
 let wildcard_type_seg ==
-    WILDCARD; { Type.Wildcard }
+    "_"; { Type.Wildcard }
 
-let named_short_type ==
+let basic_named_short_type ==
+    s = named_type_seg;
+    { $startpos(s), s, None }
+
+let named_short_type :=
     s = named_type_seg;
     p = type_params?;
     { $startpos(s), s, p }
@@ -428,7 +361,7 @@ let basic_wildcard_short_type ==
     s = wildcard_type_seg;
     { $startpos(s), s, None }
 
-let wildcard_short_type ==
+let wildcard_short_type :=
     s = wildcard_type_seg;
     p = type_params?;
     { $startpos(s), s, p }
@@ -439,12 +372,12 @@ let wildcard_type :=
 let named_type_path :=
     p = loption(terminated(named_type_path, DOT));
     t = named_short_type;
-    { p @ [t] }
+    { t :: p }
 
-let named_type ==
+let named_type :=
     append(
         terminated(basic_wildcard_short_type, DOT)*,
-        named_type_path //separated_nonempty_list(DOT, named_short_type)
+        separated_nonempty_list(DOT, named_short_type)
     )
 
 let any_type :=
@@ -454,40 +387,33 @@ let any_type :=
 let type_expr :=
     ~ = any_type; <Expr.Type>
 
-let named_type_expr ==
+let named_type_expr :=
     ~ = named_type; <Expr.Type>
 
 
 // Delimiters
 
 let delims_of(l, rule, r) ==
-    ~ = l;
+    ~ = pos(l);
     ~ = rule;
-    ~ = r;
-    { $startpos(l), rule, $startpos(r) }
+    ~ = pos(r);
+    <>
 
-(*let assoc_of(l, elem, r) ==
-    ~ = l;
-    L_SEP?;
-    elems = separated_list(any_sep, elem);
-    L_SEP?;
-    ~ = r;
-    { $startpos(l), elems, $startpos(r) }*)
 let assoc_of(l, elem, r) ==
     delims_of(
-        terminated(l, L_SEP?),
+        terminated(l, "sep"?),
         separated_list(any_sep, elem),
-        preceded(L_SEP?, r)
+        preceded("sep"?, r)
     )
 
 let array_of(elem) ==
-    assoc_of(HASHLBRACKET, elem, RBRACKET)
+    assoc_of("#[", elem, "]")
 
 let hash_of(k, v) ==
-    assoc_of(HASHLPAREN, separated_pair(k, EQGT, v), RPAREN)
+    assoc_of("#(", separated_pair(k, "=>", v), ")")
 
 let tuple_of(elem) == 
-    assoc_of(HASHLBRACE, elem, RBRACE)
+    assoc_of("#{", elem, "}")
 
 
 // Expressions
@@ -513,16 +439,16 @@ let tuple :=
 
 let paren :=
     ~ = delims_of(
-        terminated(LPAREN, L_SEP?),
+        terminated("(", "sep"?),
         separated_nonempty_list(comma_sep, paren_expr),
-        preceded(L_SEP?, RPAREN)
+        preceded("sep"?, ")")
     );
     <Expr.Paren>
 
 
 let multi_msg_begin ==
     | ~ = wpos(PUNNED); <Label.Punned>
-    | ~ = wpos(label); L_SEP?; ~ = full_expr; <Label.Named>
+    | ~ = wpos(label); "sep"?; ~ = full_expr; <Label.Named>
 
 let multi_msg_contents :=
     b = multi_msg_begin;
@@ -546,30 +472,112 @@ let msg_of(contents) ==
     preceded(L_SEP?, RBRACKET);
     <>
 
-let simple_msg :=
+let simple_msg ==
     msg_of(simple_msg_contents)
 
 let obj_msg :=
     msg_of(obj_msg_contents)
 
 
-let op_1 ==
-    | STAR; { `Times }
-    | DIV; { `Div }
-    | DIVDIV; { `IntDiv }
-    | MOD; { `Mod }
-    | PLUS; { `Plus }
+let non_generic_type_path :=
+    p = loption(terminated(non_generic_type_path, DOT));
+    t = basic_named_short_type;
+    { t :: p }
+
+let fix_type_begin ==
+    append(
+        terminated(basic_wildcard_short_type, DOT)*,
+        rev(non_generic_type_path)
+    )
+
+let fix_type_expr :=
+    |
+        ~ = fix_type_begin;
+        ~ = simple_msg;
+        <Expr.Type_message>
+    |
+        b = fix_type_begin;
+        DOT;
+        i = ident;
+        { Expr.Member(Expr.Type b, i) }
+    |
+        b = fix_type_begin;
+        l = pos(terminated("[", "sep"?));
+        p = separated_nonempty_list(any_sep, any_type);
+        r = pos(preceded("sep"?, "]"));
+        e = endrule(
+            | ~ = simple_msg; <`First>
+            | DOT; ~ = ident; <`Second>
+            | DOT; ~ = fix_type_expr; <`Third>
+        );
+        {
+            let t =
+                b
+                |> List.rev
+                |> (fun ((p', s, _) :: rest) -> (p', s, Some(l, p, r)) :: rest)
+                |> List.rev
+            in
+            match e with
+            | `First m -> Expr.Type_message(t, m)
+            | `Second i -> Expr.Member(Expr.Type t, i)
+            | `Third(Expr.Type_message(t', m)) -> Expr.Type_message(t @ t', m)
+            | `Third(Expr.Member(Expr.Type t', m)) -> Expr.Member(Expr.Type(t @ t'), m)
+            | `Third _ -> failwith "???"
+        }
+
+
+let normal_ops ==
+    | "*"; { `Times }
+    | "/"; { `Div }
+    | "//"; { `IntDiv }
+    | "%"; { `Mod }
+    | "+"; { `Plus }
+    | "%%"; { `IsMod }
+    | "&"; { `BitAnd }
+    | "|"; { `BitOr }
+    | "^"; { `BitXor }
+    | "<<"; { `Shr }
+    | ">>"; { `Shl }
+    | "?="; { `Eq }
+    | "!="; { `Ne }
+    | ">"; { `Gt }
+    | ">="; { `Ge }
+    | "<"; { `Lt }
+    | "<="; { `Le }
+    | "&&"; { `And }
+    | "||"; { `Or }
+    | "^^"; { `Xor }
+    | "!!"; { `Nor }
+    | "="; { `Assign None }
+    | "+="; { `Assign(Some `Plus) }
+    | "-="; { `Assign(Some `Minus) }
+    | "*="; { `Assign(Some `Times) }
+    | "**="; { `Assign(Some `Pow) }
+    | "/="; { `Assign(Some `Div) }
+    | "//="; { `Assign(Some `IntDiv) }
+    | "%="; { `Assign(Some `Mod) }
+    | "%%="; { `Assign(Some `IsMod) }
+    | "&="; { `Assign(Some `BitAnd) }
+    | "&&="; { `Assign(Some `And) }
+    | "|="; { `Assign(Some `BitOr) }
+    | "||="; { `Assign(Some `Or) }
+    | "^="; { `Assign(Some `BitXor) }
+    | "^^="; { `Assign(Some `Xor) }
+    | "!!="; { `Assign(Some `Nor) }
+    | ">>="; { `Assign(Some `Shr) }
+    | "<<="; { `Assign(Some `Shl) }
 
 let expr_of(self, sep) :=
-    | ~ = named_type_expr; DOT; ~ = ident; <Expr.Member> %prec below_top
-    | ~ = self; DOT; ~ = ident; <Expr.Member> %prec below_top
-    
-    | ~ = self; ~ = obj_msg; <Expr.Obj_message> %prec below_top
+    | fix_type_expr
 
-    | o = pos(PLUSPLUS); e = self; { Expr.Prefix(o, Prefix.Incr, e) } //%prec below_incr_decr
-    | o = pos(MINUSMINUS); e = self; { Expr.Prefix(o, Prefix.Decr, e) } //%prec below_incr_decr
-    | e = self; o = midrule(pos(PLUSPLUS)); { Expr.Postfix(e, o, Postfix.Incr) } %prec below_incr_decr
-    | e = self; o = midrule(pos(MINUSMINUS)); { Expr.Postfix(e, o, Postfix.Decr) } %prec below_incr_decr
+    | ~ = self; DOT; ~ = ident; <Expr.Member>
+    
+    | ~ = self; ~ = obj_msg; <Expr.Obj_message>
+
+    | o = pos(PLUSPLUS); e = self; { Expr.Prefix(o, Prefix.Incr, e) }
+    | o = pos(MINUSMINUS); e = self; { Expr.Prefix(o, Prefix.Decr, e) }
+    | e = self; o = midrule(pos(PLUSPLUS)); { Expr.Postfix(e, o, Postfix.Incr) }
+    | e = self; o = midrule(pos(MINUSMINUS)); { Expr.Postfix(e, o, Postfix.Decr) }
 
     | o = pos(BANG); e = self; { Expr.Prefix(o, Prefix.Not, e) }
 
@@ -584,7 +592,7 @@ let expr_of(self, sep) :=
 
     | l = self; o = pos(STARSTAR); r = self; { Expr.Infix(l, o, `Pow, r) }
 
-    | l = self; (p, o) = wpos(op_1); r = self; <Expr.Infix>
+    | l = self; (p, o) = wpos(normal_ops); r = self; <Expr.Infix>
 
     | basic_expr
 
