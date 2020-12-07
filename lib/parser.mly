@@ -499,7 +499,7 @@ let fix_type_expr :=
         b = fix_type_begin;
         DOT;
         i = ident;
-        { Expr.Member(Expr.Type b, i) }
+        { Expr.Type_member(b, i) }
     |
         b = fix_type_begin;
         l = pos(terminated("[", "sep"?));
@@ -519,9 +519,9 @@ let fix_type_expr :=
             in
             match e with
             | `First m -> Expr.Type_message(t, m)
-            | `Second i -> Expr.Member(Expr.Type t, i)
+            | `Second i -> Expr.Type_member(t, i)
             | `Third(Expr.Type_message(t', m)) -> Expr.Type_message(t @ t', m)
-            | `Third(Expr.Member(Expr.Type t', m)) -> Expr.Member(Expr.Type(t @ t'), m)
+            | `Third(Expr.Type_member(t', m)) -> Expr.Type_member(t @ t', m)
             | `Third _ -> failwith "???"
         }
 
@@ -570,7 +570,7 @@ let normal_ops ==
 let expr_of(self, sep) :=
     | fix_type_expr
 
-    | ~ = self; DOT; ~ = ident; <Expr.Member>
+    | ~ = self; DOT; ~ = ident; <Expr.Obj_member>
     
     | ~ = self; ~ = obj_msg; <Expr.Obj_message>
 

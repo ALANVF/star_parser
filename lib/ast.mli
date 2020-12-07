@@ -148,7 +148,8 @@ and Expr: sig
         | Obj_message of t * Message.obj
         | Obj_cascade of t * Cascade.t list
 
-        | Member of t * string
+        | Type_member of Type.t * string
+        | Obj_member of t * string
 
         | Prefix of loc * Prefix.t * t
         | Postfix of t * loc * Postfix.t
@@ -196,7 +197,8 @@ and Expr: sig
             | Obj_message of t * Message.obj
             | Obj_cascade of t * Cascade.t list
 
-            | Member of t * string
+            | Type_member of Type.t * string
+            | Obj_member of t * string
 
             | Prefix of Prefix.t * t
             | Postfix of t * Postfix.t

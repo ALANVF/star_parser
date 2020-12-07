@@ -181,7 +181,8 @@ and Expr: sig
         | Obj_message of t * Message.obj
         | Obj_cascade of t * Cascade.t list
 
-        | Member of t * string
+        | Type_member of Type.t * string
+        | Obj_member of t * string
 
         | Prefix of loc * Prefix.t * t
         | Postfix of t * loc * Postfix.t
@@ -229,7 +230,8 @@ and Expr: sig
             | Obj_message of t * Message.obj
             | Obj_cascade of t * Cascade.t list
 
-            | Member of t * string
+            | Type_member of Type.t * string
+            | Obj_member of t * string
 
             | Prefix of Prefix.t * t
             | Postfix of t * Postfix.t
@@ -279,7 +281,8 @@ end = struct
         | Obj_message of t * Message.obj
         | Obj_cascade of t * Cascade.t list
 
-        | Member of t * string
+        | Type_member of Type.t * string
+        | Obj_member of t * string
 
         | Prefix of loc * Prefix.t * t
         | Postfix of t * loc * Postfix.t
@@ -327,7 +330,8 @@ end = struct
             | Obj_message of t * Message.obj
             | Obj_cascade of t * Cascade.t list
 
-            | Member of t * string
+            | Type_member of Type.t * string
+            | Obj_member of t * string
 
             | Prefix of Prefix.t * t
             | Postfix of t * Postfix.t
@@ -366,7 +370,8 @@ end = struct
         | Type_cascade(t, c) -> Simple.Type_cascade(t, c)
         | Obj_message(e, m) -> Simple.Obj_message(to_simple e, m)
         | Obj_cascade(e, c) -> Simple.Obj_cascade(to_simple e, c)
-        | Member(e, m) -> Simple.Member(to_simple e, m)
+        | Type_member(t, m) -> Simple.Type_member(t, m)
+        | Obj_member(e, m) -> Simple.Obj_member(to_simple e, m)
         | Prefix(_, o, e) -> Simple.Prefix(o, to_simple e)
         | Postfix(e, _, o) -> Simple.Postfix(to_simple e, o)
         | Infix(l, _, o, r) -> Simple.Infix(to_simple l, o, to_simple r)
