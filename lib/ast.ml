@@ -175,7 +175,7 @@ and Expr: sig
         | Paren of t list delims_loc
         | Block of Stmt.block
 
-        | Type_message of loc * Type.t * Message.simple
+        | Type_message of Type.t * Message.simple
         | Type_cascade of Type.t * Cascade.t list
 
         | Obj_message of t * Message.obj
@@ -194,6 +194,56 @@ and Expr: sig
             value: t option
         }
     [@@deriving show]
+
+    module Simple: sig
+        type t =
+            | Name of string
+            | Type of Type.t
+            | Litsym of string
+            
+            | Tag of string * t
+
+            | Int of int
+            | Dec of float
+            | Char of char
+            | Str of string
+            | Bool of bool
+            | Array of t list
+            | Hash of (t * t) list
+            | Tuple of t list
+            | This
+            | Wildcard
+            | Func of {
+                params: (string * Type.t option) list;
+                return: Type.t option;
+                body: Stmt.t list
+            }
+            | Anon_arg of {depth: int; index: int}
+            
+            | Paren of t list
+            | Block of Stmt.block
+
+            | Type_message of Type.t * Message.simple
+            | Type_cascade of Type.t * Cascade.t list
+
+            | Obj_message of t * Message.obj
+            | Obj_cascade of t * Cascade.t list
+
+            | Member of t * string
+
+            | Prefix of Prefix.t * t
+            | Postfix of t * Postfix.t
+            | Infix of t * Infix.t * t
+
+            | Capture of {
+                name: ident;
+                t: Type.t option;
+                value: t option
+            }
+        [@@deriving show]
+    end
+
+    val to_simple: t -> Simple.t
 end = struct
     type t =
         | Name of ident
@@ -223,7 +273,7 @@ end = struct
         | Paren of t list delims_loc
         | Block of Stmt.block
 
-        | Type_message of loc * Type.t * Message.simple
+        | Type_message of Type.t * Message.simple
         | Type_cascade of Type.t * Cascade.t list
 
         | Obj_message of t * Message.obj
@@ -242,6 +292,86 @@ end = struct
             value: t option
         }
     [@@deriving show]
+
+    module Simple = struct
+        type t =
+            | Name of string
+            | Type of Type.t
+            | Litsym of string
+            
+            | Tag of string * t
+
+            | Int of int
+            | Dec of float
+            | Char of char
+            | Str of string
+            | Bool of bool
+            | Array of t list
+            | Hash of (t * t) list
+            | Tuple of t list
+            | This
+            | Wildcard
+            | Func of {
+                params: (string * Type.t option) list;
+                return: Type.t option;
+                body: Stmt.t list
+            }
+            | Anon_arg of {depth: int; index: int}
+            
+            | Paren of t list
+            | Block of Stmt.block
+
+            | Type_message of Type.t * Message.simple
+            | Type_cascade of Type.t * Cascade.t list
+
+            | Obj_message of t * Message.obj
+            | Obj_cascade of t * Cascade.t list
+
+            | Member of t * string
+
+            | Prefix of Prefix.t * t
+            | Postfix of t * Postfix.t
+            | Infix of t * Infix.t * t
+
+            | Capture of {
+                name: ident;
+                t: Type.t option;
+                value: t option
+            }
+        [@@deriving show]
+    end
+
+    let rec to_simple e =
+        let simple_list = List.map ~f:to_simple in
+        match e with
+        | Name(_, n) -> Simple.Name n
+        | Type t -> Simple.Type t
+        | Litsym(_, s) -> Simple.Litsym s
+        | Tag((_, t), e) -> Simple.Tag(t, to_simple e)
+        | Int(_, v) -> Simple.Int v
+        | Dec(_, v) -> Simple.Dec v
+        | Char(_, v) -> Simple.Char v
+        | Str(_, v) -> Simple.Str v
+        | Bool(_, v) -> Simple.Bool v
+        | Array(_, el, _) -> Simple.Array(simple_list el)
+        | Hash(_, pl, _) -> Simple.Hash(List.map pl ~f:(fun (k, v) -> to_simple k, to_simple v))
+        | Tuple(_, el, _) -> Simple.Tuple(simple_list el)
+        | This _ -> Simple.This
+        | Wildcard _ -> Simple.Wildcard
+        | Func _ -> failwith "todo"
+        | Anon_arg {depth; index; _} -> Simple.Anon_arg {depth; index}
+        | Paren(_, el, _) -> Simple.Paren(simple_list el)
+        | Block b -> Simple.Block b
+        | Type_message(t, m) -> Simple.Type_message(t, m)
+        | Type_cascade(t, c) -> Simple.Type_cascade(t, c)
+        | Obj_message(e, m) -> Simple.Obj_message(to_simple e, m)
+        | Obj_cascade(e, c) -> Simple.Obj_cascade(to_simple e, c)
+        | Member(e, m) -> Simple.Member(to_simple e, m)
+        | Prefix(_, o, e) -> Simple.Prefix(o, to_simple e)
+        | Postfix(e, _, o) -> Simple.Postfix(to_simple e, o)
+        | Infix(l, _, o, r) -> Simple.Infix(to_simple l, o, to_simple r)
+        | Capture _ -> failwith "todo"
+
 end
 
 and Stmt: sig

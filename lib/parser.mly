@@ -212,10 +212,9 @@
 
 %right STARSTAR // a ** b
 
-%nonassoc
-    TAG        // #a b
-    PLUSPLUS   // ++a, a++
-    MINUSMINUS // --a, a--
+%nonassoc TAG // #a b
+
+%right QUESTION // a?
 
 %right
     TILDE       // ~a
@@ -223,30 +222,38 @@
 
 %left BANG // !a
 
+%nonassoc below_incr_decr
+
+%nonassoc
+    PLUSPLUS  // ++a, --a
+    MINUSMINUS // a++, a--
+
 // maybe change to %left
 %nonassoc CASCADE // a -> b
 
-%nonassoc below_postfix_msg
+%nonassoc below_top
 
-%right QUESTION // a?
+%right DOT // a.b
 
-%left DOT // a.b
+%nonassoc top_prec
 
 
 //%type <Ast.expr>
 
 %type <Expr.t list> program
 
-%type <Expr.t> literal basic_expr expr paren_expr full_expr
+%type <Expr.t> literal basic_expr expr paren_expr full_expr type_expr named_type_expr
 
 %type <Message.multi> multi_msg_contents
 %type <Message.simple> simple_msg_contents
 %type <Message.obj> obj_msg_contents
 
-%type <Type.t> named_type wildcard_type
+%type <Type.t> named_type wildcard_type any_type
 
 
 %start program
+
+//%on_error_reduce named_type_expr named_type named_short_type named_type_seg
 
 %%
 
@@ -362,7 +369,6 @@ let literal :=
     | bool
     | this
     | anon_arg
-    //| expr_type
 
 let litsym :=
     | l = LITSYM; { Expr.Litsym($startpos, l) }
@@ -427,21 +433,29 @@ let wildcard_short_type ==
     p = type_params?;
     { $startpos(s), s, p }
 
-let wildcard_type ==
+let wildcard_type :=
     w = wildcard_short_type; { [w] }
 
-let named_type :=
+let named_type_path :=
+    p = loption(terminated(named_type_path, DOT));
+    t = named_short_type;
+    { p @ [t] }
+
+let named_type ==
     append(
         terminated(basic_wildcard_short_type, DOT)*,
-        separated_nonempty_list(DOT, named_short_type)
+        named_type_path //separated_nonempty_list(DOT, named_short_type)
     )
 
 let any_type :=
     | named_type
     | wildcard_type
 
-let expr_type :=
+let type_expr :=
     ~ = any_type; <Expr.Type>
+
+let named_type_expr ==
+    ~ = named_type; <Expr.Type>
 
 
 // Delimiters
@@ -508,7 +522,7 @@ let paren :=
 
 let multi_msg_begin ==
     | ~ = wpos(PUNNED); <Label.Punned>
-    | ~ = wpos(label); ~ = full_expr; <Label.Named>
+    | ~ = wpos(label); L_SEP?; ~ = full_expr; <Label.Named>
 
 let multi_msg_contents :=
     b = multi_msg_begin;
@@ -539,10 +553,35 @@ let obj_msg :=
     msg_of(obj_msg_contents)
 
 
-let expr_of(self, sep) :=
-    | ~ = self; ~ = obj_msg; <Expr.Obj_message> %prec below_postfix_msg
+let op_1 ==
+    | STAR; { `Times }
+    | DIV; { `Div }
+    | DIVDIV; { `IntDiv }
+    | MOD; { `Mod }
 
-    | b = pos(BANG); e = self; { Expr.Prefix(b, Prefix.Not, e) }
+let expr_of(self, sep) :=
+    | ~ = named_type_expr; DOT; ~ = ident; <Expr.Member> %prec below_top
+    | ~ = self; DOT; ~ = ident; <Expr.Member> %prec below_top
+    
+    | ~ = self; ~ = obj_msg; <Expr.Obj_message> %prec below_top
+
+    | o = pos(PLUSPLUS); e = self; { Expr.Prefix(o, Prefix.Incr, e) } //%prec below_incr_decr
+    | o = pos(MINUSMINUS); e = self; { Expr.Prefix(o, Prefix.Decr, e) } //%prec below_incr_decr
+    | e = self; o = midrule(pos(PLUSPLUS)); { Expr.Postfix(e, o, Postfix.Incr) } %prec below_incr_decr
+    | e = self; o = midrule(pos(MINUSMINUS)); { Expr.Postfix(e, o, Postfix.Decr) } %prec below_incr_decr
+
+    | o = pos(BANG); e = self; { Expr.Prefix(o, Prefix.Not, e) }
+
+    | o = pos(TILDE); e = self; { Expr.Prefix(o, Prefix.Compl, e) }
+    | o = pos(MINUS); e = self; { Expr.Prefix(o, Prefix.Neg, e) } %prec unary_minus
+
+    | e = self; o = pos(QUESTION); { Expr.Postfix(e, o, Postfix.Truthy) }
+
+    | t = wpos(TAG); e = self; { Expr.Tag(t, e) }
+
+    | l = self; o = pos(STARSTAR); r = self; { Expr.Infix(l, o, `Pow, r) }
+
+    | l = self; (p, o) = wpos(op_1); r = self; <Expr.Infix>
 
     | basic_expr
 

@@ -142,7 +142,7 @@ and Expr: sig
         | Paren of t list delims_loc
         | Block of Stmt.block
 
-        | Type_message of loc * Type.t * Message.simple
+        | Type_message of Type.t * Message.simple
         | Type_cascade of Type.t * Cascade.t list
 
         | Obj_message of t * Message.obj
@@ -161,6 +161,56 @@ and Expr: sig
             value: t option
         }
     [@@deriving show]
+
+    module Simple: sig
+        type t =
+            | Name of string
+            | Type of Type.t
+            | Litsym of string
+            
+            | Tag of string * t
+
+            | Int of int
+            | Dec of float
+            | Char of char
+            | Str of string
+            | Bool of bool
+            | Array of t list
+            | Hash of (t * t) list
+            | Tuple of t list
+            | This
+            | Wildcard
+            | Func of {
+                params: (string * Type.t option) list;
+                return: Type.t option;
+                body: Stmt.t list
+            }
+            | Anon_arg of {depth: int; index: int}
+            
+            | Paren of t list
+            | Block of Stmt.block
+
+            | Type_message of Type.t * Message.simple
+            | Type_cascade of Type.t * Cascade.t list
+
+            | Obj_message of t * Message.obj
+            | Obj_cascade of t * Cascade.t list
+
+            | Member of t * string
+
+            | Prefix of Prefix.t * t
+            | Postfix of t * Postfix.t
+            | Infix of t * Infix.t * t
+
+            | Capture of {
+                name: ident;
+                t: Type.t option;
+                value: t option
+            }
+        [@@deriving show]
+    end
+
+    val to_simple: t -> Simple.t
 end
 
 and Stmt: sig
