@@ -6,25 +6,51 @@ let () =
         lex_curr_p={pos_lnum=l'; pos_bol=b'; pos_cnum=c'; _}
     } as lexbuf) =
         let open Format in
-        let lines = if l = l'
+
+        let sl = l - 1 in
+        let cl = l' - 1 in
+
+        let ll = cl - sl in
+        let lc = c - b - ll in
+        let cc = c' - b' - ll in
+
+        let src = Bytes.to_string lexbuf.lex_buffer in
+        let lines = Base.String.split_lines src in
+
+        let err_lines = if sl = cl
             then sprintf "line %i" l
             else sprintf "lines %i-%i" l l'
         in
-        let chars = if c = c'
-            then sprintf "character %i" c
-            else sprintf "characters %i-%i" c c'
+        let err_chars = if lc = cc
+            then sprintf "character %i" cc
+            else sprintf "characters %i-%i" lc cc
         in
 
+        let make_line = sprintf "%i | %s" in
+
+        let code =
+            if ll = 0 then
+                make_line l (List.nth lines sl)
+            else if l = 0 then
+                failwith "todo"
+            else
+                lines
+                |> Base.List.sub ~pos: (sl - 1) ~len: (ll + 1)
+                |> List.mapi(fun i s -> make_line (l + i) s)
+                |> String.concat "\n"
+        in
+
+        let bottom = if ll = 0
+            then (String.make ((l' / 10) + 3 + lc) ' ' ^ String.make (cc - lc) '^')
+            else String.make ((l' / 10) + 3 + cc) ' ' ^ "^"
+        in
+
+        printf "%i %i %i %i\n" (c' - b' + 1) ll lc cc;
         sprintf "on %s, %s near:\n%s\n%s"
-            lines
-            chars
-            (Lexing.sub_lexeme
-                lexbuf
-                (*(Lexing.lexeme_start lexbuf)*)
-                0
-                (Lexing.lexeme_end lexbuf)
-            )
-            (String.make c ' ' ^ String.make (c' - c) '^')
+            err_lines
+            err_chars
+            code
+            bottom
     in
     
     let tokenize src =
@@ -105,3 +131,17 @@ let () =
         "-a - -b";
         "1 + 2 * 3"
     ];
+    
+    print_endline "\nParen expressions:";
+    test_tokens [
+        {| 1 + (
+  2
+  -
+  (3)
+ ) / 4 |};
+        {| 1 + ((
+  2
+  -
+  3
+ ABABA) / 4 |}
+    ]
