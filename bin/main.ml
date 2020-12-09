@@ -64,7 +64,7 @@ let () =
     in
     let show_tokens = List.iter ([%show: Ast.Expr.t] |> Base.Fn.compose print_endline) in
     
-    let test_literals = tokenize "123 45.6 #\"a\" 7890 true `true` false \"abc\" $0 $.1 `script` $..2 banana" in
+    let test_literals = tokenize "123 45.6 #\"a\" 7890 #[1, 2,\n3] true `true` false \"abc\" $0 $.1 `script` $..2 banana" in
     show_tokens test_literals;
 
     (*let test_types = tokenize "Star.Core.Func[_, Star.Core.Array[Star.Native.UInt8]] _[_, _] _.Banana" in
@@ -134,12 +134,19 @@ let () =
     
     print_endline "\nParen expressions:";
     test_tokens [
-        {| 1 + (
+{| (
+    1
+    +
+    2
+) |};
+
+{| 1 + (
   2
   -
   (3)
  ) / 4 |};
-        {| 1 + ((
+
+{| 1 + ((
   2
   -
   3

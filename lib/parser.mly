@@ -127,6 +127,7 @@
 %token HASHLBRACKET "#["
 %token HASHLBRACE "#{"
 %token RPAREN ")"
+%token RPAREN_SEP "sep)"
 %token RBRACKET "]"
 %token RBRACE "}"
 
@@ -149,7 +150,7 @@
 %token EOF
 
 
-%nonassoc ",sep" "sep"
+//%nonassoc ",sep" "sep"
 %left ","
 %right "=>"
 %right "=" "+=" "-=" "*=" "**=" "/=" "//=" "%=" "%%=" "&=" "&&=" "|=" "||=" "^=" "^^=" "!!=" ">>=" "<<="
@@ -410,7 +411,7 @@ let array_of(elem) ==
     assoc_of("#[", elem, "]")
 
 let hash_of(k, v) ==
-    assoc_of("#(", separated_pair(k, "=>", v), ")")
+    assoc_of("#(", separated_pair(k, "=>", v), ")" | "sep)")
 
 let tuple_of(elem) == 
     assoc_of("#{", elem, "}")
@@ -437,12 +438,13 @@ let hash :=
 let tuple :=
     ~ = tuple_of(full_expr); <Expr.Tuple>
 
+
 let paren :=
-    ~ = delims_of(
-        terminated("(", "sep"?),
-        separated_nonempty_list(comma_sep, paren_expr),
-        preceded("sep"?, ")")
-    );
+    ~ = pos("(");
+    ioption("sep");
+    ~ = separated_nonempty_list(comma_sep, paren_expr);
+    ioption("sep");
+    ~ = pos(")" | "sep)");
     <Expr.Paren>
 
 

@@ -265,6 +265,7 @@ and read_lsep = parse
 | horiz { read_lsep lexbuf }
 | newline { next_line lexbuf; read_lsep lexbuf }
 | ',' { read_comma_sep lexbuf }
+| ')' { RPAREN_SEP }
 | "" { L_SEP }
 
 and read_comma_sep = parse
