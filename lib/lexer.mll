@@ -39,20 +39,16 @@ let label = (lower | '_') alnum*
 let type = upper alnum*
 
 let horiz = [' ' '\t']
-let newline = '\r' | '\n' | "\r\n"
-let blank = horiz+ (newline+ horiz*)* | newline+ (horiz+ newline*)*
-let line_sep = newline+ (*(newline+ horiz* )+ *)
-let comma_sep = blank? ',' blank
+let newline = ('\r' | '\n' | "\r\n")
 
 (* worry about multiline strings and interpolation later *)
 rule read_token = parse
 | horiz { read_token lexbuf }
-| newline { next_line lexbuf; read_token lexbuf }
+| newline { next_line lexbuf; read_lsep lexbuf }
+| ',' { read_comma lexbuf }
+
 | ";[" { read_multiline_comment 0 lexbuf }
 | ';' { read_line_comment lexbuf }
-| comma_sep { next_lines lexbuf; C_SEP }
-| ',' { C_HS }
-| line_sep { next_lines lexbuf; L_SEP }
 
 | "true" { BOOL true }
 | "false" { BOOL false }
@@ -263,3 +259,20 @@ and read_escape = parse
 }
 | eof { bad_eof() }
 | _ { raise (SyntaxError "Invalid escape!") }
+
+
+and read_lsep = parse
+| horiz { read_lsep lexbuf }
+| newline { next_line lexbuf; read_lsep lexbuf }
+| ',' { read_comma_sep lexbuf }
+| "" { L_SEP }
+
+and read_comma_sep = parse
+| horiz { read_comma_sep lexbuf }
+| newline { next_line lexbuf; read_comma_sep lexbuf }
+| "" { C_SEP }
+
+and read_comma = parse
+| horiz { read_comma lexbuf }
+| newline { next_line lexbuf; read_comma_sep lexbuf }
+| "" { COMMA }

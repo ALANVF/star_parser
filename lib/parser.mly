@@ -3,7 +3,7 @@
 %}
 
 %token C_SEP ",sep"
-%token C_HS ","
+%token COMMA ","
 %token L_SEP "sep"
 
 %token MODULE

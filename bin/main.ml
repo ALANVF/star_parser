@@ -41,7 +41,7 @@ let () =
         in
 
         let bottom = if ll = 0
-            then (String.make ((l' / 10) + 3 + lc) ' ' ^ String.make (cc - lc) '^')
+            then (String.make ((l' / 10) + 3 + lc) ' ' ^ String.make (if cc - lc = 0 then 1 else cc - lc) '^')
             else String.make ((l' / 10) + 3 + cc) ' ' ^ "^"
         in
 
@@ -143,5 +143,5 @@ let () =
   2
   -
   3
- ABABA) / 4 |}
+) / 4) |}
     ]
