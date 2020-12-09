@@ -3,6 +3,7 @@
     open Parser
     open Base
     module Array = Caml.Array (* ocamllex bug? *)
+    module Bytes = Caml.Bytes
     
     exception SyntaxError of string
 
@@ -10,8 +11,15 @@
         let pos = lexbuf.lex_curr_p in
         lexbuf.lex_curr_p <-
             { pos with
-                pos_bol = lexbuf.lex_curr_pos;
+                pos_bol = lexbuf.lex_curr_p.pos_cnum - (Lexing.lexeme lexbuf |> String.length);
                 pos_lnum = pos.pos_lnum + 1 }
+    
+    let next_lines lexbuf =
+        lexbuf
+        |> Lexing.lexeme
+        |> String.split_lines
+        |> List.tl_exn
+        |> List.iter ~f: (fun _ -> next_line lexbuf)
 
     let bad_eof () = raise (SyntaxError "Unexpected EOF!")
 }
@@ -33,19 +41,18 @@ let type = upper alnum*
 let horiz = [' ' '\t']
 let newline = '\r' | '\n' | "\r\n"
 let blank = horiz+ (newline+ horiz*)* | newline+ (horiz+ newline*)*
-let line_sep = horiz* (newline+ horiz*)+
+let line_sep = newline+ (*(newline+ horiz* )+ *)
 let comma_sep = blank? ',' blank
-let comma = horiz* ',' horiz*
 
 (* worry about multiline strings and interpolation later *)
 rule read_token = parse
 | horiz { read_token lexbuf }
-| newline { new_line lexbuf; read_token lexbuf }
+| newline { next_line lexbuf; read_token lexbuf }
 | ";[" { read_multiline_comment 0 lexbuf }
 | ';' { read_line_comment lexbuf }
-| comma_sep { C_SEP }
-| comma { C_HS }
-| line_sep { L_SEP }
+| comma_sep { next_lines lexbuf; C_SEP }
+| ',' { C_HS }
+| line_sep { next_lines lexbuf; L_SEP }
 
 | "true" { BOOL true }
 | "false" { BOOL false }

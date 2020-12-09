@@ -567,7 +567,7 @@ let normal_ops ==
     | ">>="; { `Assign(Some `Shr) }
     | "<<="; { `Assign(Some `Shl) }
 
-let expr_of(self, sep) :=
+let expr_of(self) :=
     | fix_type_expr
 
     | ~ = self; DOT; ~ = ident; <Expr.Obj_member>
@@ -596,11 +596,51 @@ let expr_of(self, sep) :=
 
     | basic_expr
 
+
+let paren_pow_op ==
+    ioption("sep"); ~ = pos(STARSTAR); ioption("sep"); <>
+
+let paren_minus_op ==
+    ioption("sep"); ~ = pos(MINUS); ioption("sep"); <>
+
+let paren_ops ==
+    ioption("sep"); ~ = wpos(normal_ops); ioption("sep"); <>
+
+let paren_expr_of(self) :=
+    | fix_type_expr
+
+    | ~ = self; DOT; ~ = ident; <Expr.Obj_member>
+    
+    | ~ = self; ~ = obj_msg; <Expr.Obj_message>
+
+    | o = pos(PLUSPLUS); e = self; { Expr.Prefix(o, Prefix.Incr, e) }
+    | o = pos(MINUSMINUS); e = self; { Expr.Prefix(o, Prefix.Decr, e) }
+    | e = self; o = midrule(pos(PLUSPLUS)); { Expr.Postfix(e, o, Postfix.Incr) }
+    | e = self; o = midrule(pos(MINUSMINUS)); { Expr.Postfix(e, o, Postfix.Decr) }
+
+    | o = pos(BANG); e = self; { Expr.Prefix(o, Prefix.Not, e) }
+
+    | l = self; p = paren_minus_op; r = self; { Expr.Infix(l, p, `Minus, r) }
+
+    | o = pos(TILDE); e = self; { Expr.Prefix(o, Prefix.Compl, e) }
+    | o = pos(MINUS); e = self; { Expr.Prefix(o, Prefix.Neg, e) } %prec unary_minus
+
+    | e = self; o = pos(QUESTION); { Expr.Postfix(e, o, Postfix.Truthy) }
+
+    | t = wpos(TAG); e = self; { Expr.Tag(t, e) }
+
+    | l = self; o = paren_pow_op; r = self; { Expr.Infix(l, o, `Pow, r) }
+
+    | l = self; (p, o) = paren_ops; r = self; <Expr.Infix>
+
+    | basic_expr
+
+
 let expr :=
-    expr_of(expr, {()})
+    expr_of(expr)
 
 let paren_expr :=
-    expr_of(paren_expr, L_SEP?)
+    paren_expr_of(paren_expr)
 
 let full_expr :=
     expr
